@@ -1,0 +1,15 @@
+COMPLETADO: SI
+======================================================================
+📋 DATOS SUBJETIVOS Y ESTADO MATUTINO (01/09/2026)
+======================================================================
+• Horas de sueno: 8
+• Calidad del sueno (1-5): 4
+• Estado de animo (1-5): 4
+• Nivel de dolor (0-10): 2
+• Detalle de dolor: Miembros inferiores
+• Percepcion de readiness (1-10): 10
+• Ejercicio previo: Fuerza biceps y espalda
+• Cafeina dia previo: 1 taza matutina
+• Alcohol dia previo: No
+• Sintomas o sensaciones: Ninguno
+======================================================================
