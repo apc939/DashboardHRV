@@ -677,100 +677,107 @@
                 background: #f8fafc !important;
                 border: 1px solid #cbd5e1 !important;
                 padding: 8px 14px !important;
+            /* ========================================================= */
+            /* PÁGINA 1: Header + KPIs + Subjetivo + 4 Gráficos Sesión   */
+            /* ========================================================= */
+            header {
+                background: #f8fafc !important;
+                border: 1px solid #cbd5e1 !important;
+                padding: 4px 10px !important;
                 break-after: avoid !important;
                 page-break-after: avoid !important;
             }
 
             .header-title h1 {
-                font-size: 1.1rem !important;
+                font-size: 1rem !important;
                 color: #0369a1 !important;
             }
 
             .header-title p {
                 color: #475569 !important;
-                font-size: 0.75rem !important;
+                font-size: 0.7rem !important;
             }
 
             .kpi-grid {
                 display: grid !important;
                 grid-template-columns: repeat(4, 1fr) !important;
-                gap: 8px !important;
+                gap: 4px !important;
                 break-inside: avoid !important;
                 page-break-inside: avoid !important;
-                margin-top: 8px !important;
-                margin-bottom: 8px !important;
+                margin-top: 4px !important;
+                margin-bottom: 4px !important;
             }
 
             .card {
                 background: #ffffff !important;
                 border: 1px solid #cbd5e1 !important;
                 box-shadow: none !important;
-                padding: 6px 10px !important;
+                padding: 4px 8px !important;
             }
 
             .card-header {
                 color: #64748b !important;
-                font-size: 0.7rem !important;
+                font-size: 0.65rem !important;
             }
 
             .card-value {
-                font-size: 1.25rem !important;
+                font-size: 1.15rem !important;
             }
 
             .card-desc {
                 color: #64748b !important;
-                font-size: 0.68rem !important;
+                font-size: 0.62rem !important;
             }
 
             .subjective-card {
                 background: #ffffff !important;
                 border: 1px solid #cbd5e1 !important;
-                padding: 6px 10px !important;
-                margin-top: 4px !important;
-                margin-bottom: 6px !important;
+                padding: 4px 8px !important;
+                margin-top: 3px !important;
+                margin-bottom: 4px !important;
                 break-inside: avoid !important;
                 page-break-inside: avoid !important;
             }
 
             .subjective-grid {
                 display: grid !important;
-                grid-template-columns: 140px 1fr 1fr 1.1fr !important;
-                gap: 6px !important;
+                grid-template-columns: 130px 1fr 1fr 1.1fr !important;
+                gap: 4px !important;
             }
 
             .sub-col {
                 background: #f8fafc !important;
                 border: 1px solid #cbd5e1 !important;
-                padding: 4px 6px !important;
-                gap: 3px !important;
+                padding: 3px 5px !important;
+                gap: 2px !important;
                 min-width: 0 !important;
                 box-sizing: border-box !important;
             }
 
             .readiness-score {
-                font-size: 1.5rem !important;
+                font-size: 1.3rem !important;
                 color: #0369a1 !important;
             }
 
             .readiness-pill {
-                font-size: 0.65rem !important;
-                padding: 2px 6px !important;
+                font-size: 0.62rem !important;
+                padding: 2px 5px !important;
                 max-width: 100% !important;
                 box-sizing: border-box !important;
             }
 
             .sub-val-highlight {
-                font-size: 0.95rem !important;
+                font-size: 0.88rem !important;
                 color: #0369a1 !important;
             }
 
             .sub-val, .sub-val-text {
-                font-size: 0.72rem !important;
+                font-size: 0.68rem !important;
                 color: #0f172a !important;
             }
 
             .sub-label {
-                font-size: 0.62rem !important;
+                font-size: 0.58rem !important;
                 color: #64748b !important;
             }
 
@@ -778,9 +785,10 @@
             .charts-grid {
                 display: grid !important;
                 grid-template-columns: repeat(2, 1fr) !important;
-                gap: 8px !important;
+                gap: 4px !important;
                 break-inside: avoid !important;
                 page-break-inside: avoid !important;
+                margin-top: 4px !important;
                 break-after: page !important;
                 page-break-after: always !important; /* FIN DE PÁGINA 1 */
             }
@@ -789,21 +797,26 @@
                 background: #ffffff !important;
                 border: 1px solid #cbd5e1 !important;
                 box-shadow: none !important;
-                padding: 8px 10px !important;
+                padding: 4px 6px !important;
                 break-inside: avoid !important;
                 page-break-inside: avoid !important;
             }
 
             .chart-card svg {
-                max-height: 175px !important;
-                height: 175px !important;
+                max-height: 110px !important;
+                height: 110px !important;
                 width: 100% !important;
             }
 
             .chart-title {
                 color: #0f172a !important;
-                font-size: 0.78rem !important;
-                margin-bottom: 4px !important;
+                font-size: 0.7rem !important;
+                margin-bottom: 2px !important;
+            }
+
+            .chart-legend {
+                font-size: 0.62rem !important;
+                gap: 5px !important;
             }
 
             .grid-line {
@@ -812,7 +825,7 @@
 
             .axis-label {
                 fill: #475569 !important;
-                font-size: 8px !important;
+                font-size: 7.5px !important;
             }
 
             .data-point {
@@ -827,12 +840,10 @@
                 background: #ffffff !important;
                 border: 1px solid #cbd5e1 !important;
                 box-shadow: none !important;
-                padding: 12px 14px !important;
-                page-break-before: always !important; /* INICIO DE PÁGINA 2 */
-                break-before: page !important;
+                padding: 10px 12px !important;
                 break-inside: avoid !important;
                 page-break-inside: avoid !important;
-                margin-top: 10px !important;
+                margin-top: 8px !important;
             }
 
             table {
@@ -857,25 +868,25 @@
                 background: #f1f5f9 !important;
                 color: #0f172a !important;
                 border-bottom: 2px solid #cbd5e1 !important;
-                padding: 6px 8px !important;
-                font-size: 0.74rem !important;
+                padding: 5px 6px !important;
+                font-size: 0.72rem !important;
             }
 
             table td {
                 color: #1e293b !important;
                 border-bottom: 1px solid #e2e8f0 !important;
-                padding: 6px 8px !important;
-                font-size: 0.76rem !important;
+                padding: 5px 6px !important;
+                font-size: 0.74rem !important;
             }
 
             .interpretation-header {
-                margin-top: 14px !important;
+                margin-top: 12px !important;
                 break-after: avoid !important;
                 page-break-after: avoid !important;
             }
 
             .interpretation-grid {
-                gap: 8px !important;
+                gap: 6px !important;
                 break-inside: avoid !important;
                 page-break-inside: avoid !important;
                 margin-top: 6px !important;
@@ -886,20 +897,20 @@
             .interp-box {
                 background: #ffffff !important;
                 border: 1px solid #cbd5e1 !important;
-                padding: 10px 14px !important;
+                padding: 8px 12px !important;
                 break-inside: avoid !important;
                 page-break-inside: avoid !important;
             }
 
             .interp-box h4 {
-                font-size: 0.8rem !important;
-                margin-bottom: 3px !important;
+                font-size: 0.78rem !important;
+                margin-bottom: 2px !important;
             }
 
             .interp-box p {
                 color: #334155 !important;
-                font-size: 0.74rem !important;
-                line-height: 1.38 !important;
+                font-size: 0.72rem !important;
+                line-height: 1.35 !important;
             }
 
             .interp-pns { border-left: 4px solid #047857 !important; }
@@ -908,7 +919,7 @@
 
             .status-badge, #review-status-badge {
                 border: 1px solid !important;
-                font-size: 0.74rem !important;
+                font-size: 0.72rem !important;
                 padding: 3px 8px !important;
             }
 
@@ -943,13 +954,13 @@
                 display: block !important;
                 break-after: page !important;
                 page-break-after: always !important; /* FIN DE PÁGINA 3 */
-                margin-top: 10px !important;
+                margin-top: 8px !important;
             }
 
             /* Bloque 2: Fases 4, 5 y 6 (Página 4) */
             .longitudinal-block-2 {
                 display: block !important;
-                margin-top: 10px !important;
+                margin-top: 8px !important;
             }
 
             .charts-grid-3 {
