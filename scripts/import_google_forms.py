@@ -13,50 +13,65 @@ def find_column(headers, patterns):
                 return idx
     return None
 
-def detect_date_format(date_samples):
-    month_first_evidence = 0
-    day_first_evidence = 0
-    
-    for val in date_samples:
-        if not val:
-            continue
-        val = val.strip().split(" ")[0]
-        if re.match(r"^\d{4}[-/]\d{1,2}[-/]\d{1,2}$", val):
-            return "YEAR_FIRST"
-            
-        m = re.match(r"^(\d{1,2})[-/](\d{1,2})[-/](\d{2,4})$", val)
-        if m:
-            p1, p2, p3 = int(m.group(1)), int(m.group(2)), int(m.group(3))
-            if p1 > 12 and p2 <= 12:
-                day_first_evidence += 1
-            elif p2 > 12 and p1 <= 12:
-                month_first_evidence += 1
-                
-    if month_first_evidence > 0 and day_first_evidence == 0:
-        return "MONTH_FIRST"
-    if day_first_evidence > 0 and month_first_evidence == 0:
-        return "DAY_FIRST"
-    return "DEFAULT"
-
-def parse_date_str(val, date_pref="DEFAULT"):
+def parse_date_str(val, timestamp_raw=None, valid_csv_stems=None):
     if not val:
         return None
     val = val.strip().split(" ")[0] # Remover posible hora
     
-    if date_pref == "MONTH_FIRST":
-        formats = ["%m/%d/%Y", "%m-%d-%Y", "%m/%d/%y", "%m-%d-%y", "%Y-%m-%d", "%Y/%m/%d", "%d/%m/%Y", "%d-%m-%Y"]
-    elif date_pref == "YEAR_FIRST":
-        formats = ["%Y-%m-%d", "%Y/%m/%d", "%d/%m/%Y", "%d-%m-%Y", "%m/%d/%Y", "%m-%d-%Y"]
-    else:
-        formats = ["%d/%m/%Y", "%d-%m-%Y", "%Y-%m-%d", "%Y/%m/%d", "%d/%m/%y", "%d-%m-%y", "%m/%d/%Y", "%m-%d-%Y", "%m/%d/%y", "%m-%d-%y"]
+    # 1. Formatos YYYY-MM-DD o YYYY/MM/DD (Inambiguos)
+    m_year = re.match(r"^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$", val)
+    if m_year:
+        y, m, d = int(m_year.group(1)), int(m_year.group(2)), int(m_year.group(3))
+        dt = datetime(y, m, d)
+        return dt.strftime("%d%m%Y"), dt.strftime("%d/%m/%Y")
         
-    for fmt in formats:
-        try:
-            dt = datetime.strptime(val, fmt)
+    m = re.match(r"^(\d{1,2})[-/](\d{1,2})[-/](\d{2,4})$", val)
+    if not m:
+        return None
+        
+    p1, p2, p3 = int(m.group(1)), int(m.group(2)), int(m.group(3))
+    if p3 < 100:
+        p3 += 2000 # 26 -> 2026
+        
+    # Caso 1: p1 > 12 -> Inambiguo DD/MM/YYYY (ej. 31/08/2026)
+    if p1 > 12 and p2 <= 12:
+        dt = datetime(p3, p2, p1)
+        return dt.strftime("%d%m%Y"), dt.strftime("%d/%m/%Y")
+        
+    # Caso 2: p2 > 12 -> Inambiguo MM/DD/YYYY (ej. 08/31/2026)
+    if p2 > 12 and p1 <= 12:
+        dt = datetime(p3, p1, p2)
+        return dt.strftime("%d%m%Y"), dt.strftime("%d/%m/%Y")
+        
+    # Caso 3: Ambos <= 12 -> Ambiguo (ej. 1/9/2026 o 9/1/2026)
+    candidate_dmy = f"{p1:02d}{p2:02d}{p3:04d}" # DD/MM/YYYY
+    candidate_mdy = f"{p2:02d}{p1:02d}{p3:04d}" # MM/DD/YYYY
+    
+    # Filtro 1: Si existen pruebas de Kubios del paciente
+    if valid_csv_stems:
+        if candidate_dmy in valid_csv_stems and candidate_mdy not in valid_csv_stems:
+            dt = datetime(p3, p2, p1)
             return dt.strftime("%d%m%Y"), dt.strftime("%d/%m/%Y")
-        except ValueError:
-            continue
-    return None
+        elif candidate_mdy in valid_csv_stems and candidate_dmy not in valid_csv_stems:
+            dt = datetime(p3, p1, p2)
+            return dt.strftime("%d%m%Y"), dt.strftime("%d/%m/%Y")
+            
+    # Filtro 2: Desambiguación con Marca temporal (Timestamp)
+    if timestamp_raw:
+        ts_val = timestamp_raw.strip().split(" ")[0]
+        m_ts = re.match(r"^(\d{1,2})[-/](\d{1,2})[-/](\d{2,4})$", ts_val)
+        if m_ts:
+            ts_p1, ts_p2 = int(m_ts.group(1)), int(m_ts.group(2))
+            if (ts_p1 == p2 or ts_p2 == p2) and (ts_p1 != p1 and ts_p2 != p1):
+                dt = datetime(p3, p2, p1)
+                return dt.strftime("%d%m%Y"), dt.strftime("%d/%m/%Y")
+            elif (ts_p1 == p1 or ts_p2 == p1) and (ts_p1 != p2 and ts_p2 != p2):
+                dt = datetime(p3, p1, p2)
+                return dt.strftime("%d%m%Y"), dt.strftime("%d/%m/%Y")
+                
+    # Filtro 3: Por defecto DD/MM/YYYY (Estándar clínico del repositorio)
+    dt = datetime(p3, p2, p1)
+    return dt.strftime("%d%m%Y"), dt.strftime("%d/%m/%Y")
 
 def get_patient_root_dir(path):
     abs_path = os.path.abspath(path)
@@ -174,22 +189,30 @@ def import_forms_csv(source, patient_dir):
     idx_caffeine = find_column(headers, [r"cafe[íi]na", r"caf[ée]", r"caffeine"])
     idx_alcohol = find_column(headers, [r"alcohol", r"cerveza", r"vino", r"licor"])
     idx_symptoms = find_column(headers, [r"s[íi]ntomas", r"sensaciones", r"observaciones", r"notas", r"comentarios"])
+    idx_timestamp = find_column(headers, [r"marca temporal", r"timestamp"])
 
     if idx_date is None:
         print("Error: El archivo no parece ser una encuesta válida. No se encontró ninguna columna de fecha.")
         sys.exit(1)
 
-    rows = list(reader)
-    date_samples = [row[idx_date] for row in rows if len(row) > idx_date]
-    date_pref = detect_date_format(date_samples)
+    # Obtener fechas existentes de pruebas de Kubios del paciente para desambiguación perfecta
+    valid_csv_stems = set()
+    try:
+        from parse_hrv import find_patient_csv_files
+        csv_files = find_patient_csv_files(patient_root)
+        valid_csv_stems = {os.path.basename(f).replace(".csv", "") for f in csv_files}
+    except Exception:
+        pass
 
+    rows = list(reader)
     imported_count = 0
     for row_idx, row in enumerate(rows, start=2):
         if not row or len(row) <= idx_date:
             continue
             
         date_raw = row[idx_date]
-        parsed_d = parse_date_str(date_raw, date_pref)
+        timestamp_raw = row[idx_timestamp] if idx_timestamp is not None and idx_timestamp < len(row) else None
+        parsed_d = parse_date_str(date_raw, timestamp_raw, valid_csv_stems)
         if not parsed_d:
             print(f"Fila {row_idx}: No se pudo interpretar la fecha '{date_raw}'. Omitiendo...")
             continue

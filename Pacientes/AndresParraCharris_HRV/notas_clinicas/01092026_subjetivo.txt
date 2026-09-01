@@ -5,10 +5,10 @@ COMPLETADO: SI
 • Horas de sueno: 8
 • Calidad del sueno (1-5): 4
 • Estado de animo (1-5): 4
-• Nivel de dolor (0-10): 2
-• Detalle de dolor: Miembros inferiores
-• Percepcion de readiness (1-10): 10
-• Ejercicio previo: Fuerza biceps y espalda
+• Nivel de dolor (0-10): 0
+• Detalle de dolor: Ninguno
+• Percepcion de readiness (1-10): 8
+• Ejercicio previo: Descanso
 • Cafeina dia previo: 1 taza matutina
 • Alcohol dia previo: No
 • Sintomas o sensaciones: Ninguno
