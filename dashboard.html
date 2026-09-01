@@ -671,13 +671,6 @@
             }
 
             /* ========================================================= */
-            /* PÁGINA 1: Header + KPIs + 4 Gráficos de la Sesión         */
-            /* ========================================================= */
-            header {
-                background: #f8fafc !important;
-                border: 1px solid #cbd5e1 !important;
-                padding: 8px 14px !important;
-            /* ========================================================= */
             /* PÁGINA 1: Header + KPIs + Subjetivo + 4 Gráficos Sesión   */
             /* ========================================================= */
             header {
@@ -793,29 +786,39 @@
                 page-break-after: always !important; /* FIN DE PÁGINA 1 */
             }
 
-            .chart-card {
+            .charts-grid-2 .chart-card,
+            .charts-grid .chart-card {
                 background: #ffffff !important;
                 border: 1px solid #cbd5e1 !important;
                 box-shadow: none !important;
-                padding: 4px 6px !important;
+                padding: 3px 6px !important;
+                box-sizing: border-box !important;
                 break-inside: avoid !important;
                 page-break-inside: avoid !important;
             }
 
-            .chart-card svg {
-                max-height: 110px !important;
-                height: 110px !important;
+            .charts-grid-2 .svg-container,
+            .charts-grid .svg-container {
+                height: 95px !important;
+                max-height: 95px !important;
+                width: 100% !important;
+            }
+
+            .charts-grid-2 svg,
+            .charts-grid svg {
+                max-height: 95px !important;
+                height: 95px !important;
                 width: 100% !important;
             }
 
             .chart-title {
                 color: #0f172a !important;
-                font-size: 0.7rem !important;
+                font-size: 0.68rem !important;
                 margin-bottom: 2px !important;
             }
 
             .chart-legend {
-                font-size: 0.62rem !important;
+                font-size: 0.60rem !important;
                 gap: 5px !important;
             }
 
@@ -955,12 +958,16 @@
                 break-after: page !important;
                 page-break-after: always !important; /* FIN DE PÁGINA 3 */
                 margin-top: 8px !important;
+                clear: both !important;
             }
 
             /* Bloque 2: Fases 4, 5 y 6 (Página 4) */
             .longitudinal-block-2 {
                 display: block !important;
+                break-before: page !important;
+                page-break-before: always !important; /* INICIO DE PÁGINA 4 */
                 margin-top: 8px !important;
+                clear: both !important;
             }
 
             .charts-grid-3 {
@@ -972,8 +979,9 @@
             }
 
             .charts-grid-3 .chart-card {
-                width: calc(50% - 4px) !important;
-                max-width: calc(50% - 4px) !important;
+                flex: 0 0 calc(50% - 6px) !important;
+                width: calc(50% - 6px) !important;
+                max-width: calc(50% - 6px) !important;
                 background: #ffffff !important;
                 border: 1px solid #cbd5e1 !important;
                 padding: 6px 10px !important;
@@ -982,9 +990,15 @@
                 page-break-inside: avoid !important;
             }
 
-            .charts-grid-3 .chart-card svg {
-                max-height: 150px !important;
-                height: 150px !important;
+            .charts-grid-3 .svg-container {
+                height: 140px !important;
+                max-height: 140px !important;
+                width: 100% !important;
+            }
+
+            .charts-grid-3 svg {
+                max-height: 140px !important;
+                height: 140px !important;
                 width: 100% !important;
             }
 
@@ -1324,17 +1338,17 @@
                 </div>
             </div>
 
-            <!-- Warning message for < 7 sessions -->
-            <div id="longitudinal-warning" style="display: none; background: rgba(245, 158, 11, 0.12); border: 1px solid var(--accent-lf); padding: 10px 18px; border-radius: 8px; font-size: 0.82rem; color: var(--accent-lf); font-weight: 500; margin-bottom: 8px;">
-                ⚠️ Se requieren al menos 7 sesiones para calcular la línea base móvil y el rango de normalidad (actualmente hay <span id="warning-session-count">0</span>). Se muestran únicamente los puntos de datos individuales de cada sesión.
-            </div>
-
             <!-- ================= SECCIÓN 1: FASES 1, 2 Y 3 (PÁGINA 3) ================= -->
             <div class="longitudinal-block-1">
                 <!-- Print-only Longitudinal Header -->
                 <div class="print-long-header">
                     <h3>Seguimiento y Línea Base Longitudinal (Fases de Reposo & Respiración)</h3>
                     <span class="info-pill" style="font-size: 0.72rem; padding: 2px 8px;">Ventana Móvil 7 Registros | SWC: ±0.5 SD</span>
+                </div>
+
+                <!-- Warning message for < 7 sessions -->
+                <div id="longitudinal-warning" style="display: none; background: rgba(245, 158, 11, 0.12); border: 1px solid var(--accent-lf); padding: 10px 18px; border-radius: 8px; font-size: 0.82rem; color: var(--accent-lf); font-weight: 500; margin-bottom: 8px;">
+                    ⚠️ Se requieren al menos 7 sesiones para calcular la línea base móvil y el rango de normalidad (actualmente hay <span id="warning-session-count">0</span>). Se muestran únicamente los puntos de datos individuales de cada sesión.
                 </div>
 
                 <div class="charts-grid-3">
