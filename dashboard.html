@@ -1,0 +1,1800 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte Autonómico HRV - Dashboard Clínico</title>
+    <style>
+        :root {
+            --bg-primary: #0b1120;
+            --bg-card: #131d31;
+            --bg-secondary: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-pns: #10b981;
+            --accent-sns: #f43f5e;
+            --accent-hr: #38bdf8;
+            --accent-hf: #8b5cf6;
+            --accent-lf: #f59e0b;
+            --accent-vlf: #64748b;
+            --accent-sd1: #06b6d4;
+            --accent-sd2: #ec4899;
+            --accent-border: #26354a;
+            --grid-line: #1e2c42;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            padding: 24px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1280px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--bg-card);
+            padding: 18px 24px;
+            border-radius: 12px;
+            border: 1px solid var(--accent-border);
+            gap: 20px;
+        }
+
+        .header-title h1 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--accent-hr);
+        }
+
+        .header-title p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+            flex-wrap: nowrap;
+        }
+
+        .status-badge {
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--accent-pns);
+            padding: 6px 14px;
+            border-radius: 9999px;
+            border: 1px solid var(--accent-pns);
+            font-size: 0.8rem;
+            font-weight: 600;
+            height: 38px;
+            display: inline-flex;
+            align-items: center;
+            box-sizing: border-box;
+            white-space: nowrap;
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            border-bottom: 1px solid var(--accent-border);
+            padding-bottom: 4px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px 8px 0 0;
+            transition: all 0.2s;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .tab-btn.active {
+            color: var(--accent-hr);
+            border-bottom: 2px solid var(--accent-hr);
+            background: rgba(56, 189, 248, 0.05);
+        }
+
+        .tab-content {
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .tab-content.active {
+            display: flex;
+        }
+
+        /* KPI Cards Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--accent-border);
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .card-header {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+
+        .card-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+        }
+
+        .card-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Charts Layouts */
+        .charts-grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .charts-grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        @media (max-width: 1050px) {
+            .charts-grid-3 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 800px) {
+
+            .charts-grid-2,
+            .charts-grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chart-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--accent-border);
+            border-radius: 10px;
+            padding: 16px 18px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .chart-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .chart-legend {
+            display: flex;
+            gap: 10px;
+            font-size: 0.72rem;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--text-muted);
+        }
+
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+        }
+
+        .svg-container {
+            width: 100%;
+            height: 220px;
+            position: relative;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+
+        .axis-label {
+            font-size: 10px;
+            fill: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .grid-line {
+            stroke: var(--grid-line);
+            stroke-width: 1;
+        }
+
+        .data-point {
+            transition: r 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .data-point:hover {
+            r: 6;
+        }
+
+        /* Tooltip */
+        #tooltip {
+            position: fixed;
+            background: #1e293b;
+            border: 1px solid var(--accent-border);
+            color: #f8fafc;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            line-height: 1.45;
+        }
+
+        /* Controls in Longitudinal Tab */
+        .controls-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--bg-card);
+            padding: 12px 20px;
+            border-radius: 10px;
+            border: 1px solid var(--accent-border);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .metric-toggle {
+            display: flex;
+            gap: 6px;
+            background: var(--bg-secondary);
+            padding: 4px;
+            border-radius: 8px;
+        }
+
+        .metric-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 6px 14px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .metric-btn.active {
+            background: var(--accent-hr);
+            color: var(--bg-primary);
+        }
+
+        .info-pill {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .info-pill span {
+            color: var(--accent-hr);
+            font-weight: 600;
+        }
+
+        /* Tables & Interpretations */
+        .table-container {
+            background-color: var(--bg-card);
+            border: 1px solid var(--accent-border);
+            border-radius: 10px;
+            padding: 16px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.825rem;
+        }
+
+        th {
+            background-color: var(--bg-secondary);
+            color: var(--text-muted);
+            font-weight: 600;
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--accent-border);
+        }
+
+        td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--accent-border);
+        }
+
+        tr:hover {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .interpretation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 14px;
+        }
+
+        .interp-box {
+            background-color: var(--bg-card);
+            border-radius: 0 8px 8px 0;
+            padding: 14px 16px;
+            border: 1px solid var(--accent-border);
+        }
+
+        .interp-box h4 {
+            font-size: 0.875rem;
+            margin-bottom: 4px;
+        }
+
+        .interp-box p {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            line-height: 1.45;
+        }
+
+        .interp-pns {
+            border-left: 4px solid var(--accent-pns);
+        }
+
+        .interp-sns {
+            border-left: 4px solid var(--accent-sns);
+        }
+
+        .interp-rec {
+            border-left: 4px solid var(--accent-hf);
+        }
+
+        /* Botón de Descarga PDF */
+        .btn-pdf-download {
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent-hr);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            padding: 6px 16px;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            height: 38px;
+            box-sizing: border-box;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .btn-pdf-download:hover {
+            background: var(--accent-hr);
+            color: #0b1120;
+            border-color: var(--accent-hr);
+        }
+
+        .session-selector-container {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border);
+            padding: 6px 12px;
+            border-radius: 9999px;
+            height: 38px;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+
+        .session-selector-container:hover {
+            border-color: var(--accent-hr);
+        }
+
+        .session-selector-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        #session-select {
+            background: transparent;
+            color: var(--accent-hr);
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 0 4px;
+            font-family: inherit;
+        }
+
+        #session-select option {
+            background: var(--bg-card);
+            color: var(--text-main);
+        }
+
+        .print-only {
+            display: none;
+        }
+
+        .print-long-header {
+            display: none;
+        }
+
+        /* ========================================================= */
+        /* Estilos de Impresión: Reporte Clínico Completo (4 Páginas)*/
+        /* ========================================================= */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 8mm 10mm;
+            }
+
+            :root {
+                --bg-primary: #ffffff !important;
+                --bg-card: #ffffff !important;
+                --bg-secondary: #f8fafc !important;
+                --text-main: #0f172a !important;
+                --text-muted: #475569 !important;
+                --accent-border: #cbd5e1 !important;
+                --grid-line: #e2e8f0 !important;
+                --accent-pns: #047857 !important;
+                --accent-sns: #be123c !important;
+                --accent-hr: #0369a1 !important;
+                --accent-hf: #6d28d9 !important;
+                --accent-lf: #b45309 !important;
+                --accent-vlf: #475569 !important;
+                --accent-sd1: #0e7490 !important;
+                --accent-sd2: #be185d !important;
+            }
+
+            html, body {
+                width: 100% !important;
+                background: #ffffff !important;
+                color: #0f172a !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            .container {
+                display: block !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
+            /* Mostrar AMBAS pestañas de forma secuencial en el reporte completo */
+            .tab-content {
+                display: block !important;
+                width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
+            /* Ocultar elementos interactivos en impresión */
+            .nav-tabs,
+            .btn-pdf-download,
+            .session-selector-container,
+            #tooltip,
+            .controls-bar {
+                display: none !important;
+            }
+
+            .print-only {
+                display: inline !important;
+            }
+
+            /* ========================================================= */
+            /* PÁGINA 1: Header + KPIs + 4 Gráficos de la Sesión         */
+            /* ========================================================= */
+            header {
+                background: #f8fafc !important;
+                border: 1px solid #cbd5e1 !important;
+                padding: 8px 14px !important;
+                break-after: avoid !important;
+                page-break-after: avoid !important;
+            }
+
+            .header-title h1 {
+                font-size: 1.1rem !important;
+                color: #0369a1 !important;
+            }
+
+            .header-title p {
+                color: #475569 !important;
+                font-size: 0.75rem !important;
+            }
+
+            .kpi-grid {
+                display: grid !important;
+                grid-template-columns: repeat(4, 1fr) !important;
+                gap: 8px !important;
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+                margin-top: 8px !important;
+                margin-bottom: 8px !important;
+            }
+
+            .card {
+                background: #ffffff !important;
+                border: 1px solid #cbd5e1 !important;
+                box-shadow: none !important;
+                padding: 6px 10px !important;
+            }
+
+            .card-header {
+                color: #64748b !important;
+                font-size: 0.7rem !important;
+            }
+
+            .card-value {
+                font-size: 1.25rem !important;
+            }
+
+            .card-desc {
+                color: #64748b !important;
+                font-size: 0.68rem !important;
+            }
+
+            .charts-grid {
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 8px !important;
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+                break-after: page !important;
+                page-break-after: always !important; /* FIN DE PÁGINA 1 */
+            }
+
+            .chart-card {
+                background: #ffffff !important;
+                border: 1px solid #cbd5e1 !important;
+                box-shadow: none !important;
+                padding: 8px 10px !important;
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+            }
+
+            .chart-card svg {
+                max-height: 175px !important;
+                height: 175px !important;
+                width: 100% !important;
+            }
+
+            .chart-title {
+                color: #0f172a !important;
+                font-size: 0.78rem !important;
+                margin-bottom: 4px !important;
+            }
+
+            .grid-line {
+                stroke: #e2e8f0 !important;
+            }
+
+            .axis-label {
+                fill: #475569 !important;
+                font-size: 8px !important;
+            }
+
+            .data-point {
+                stroke: #ffffff !important;
+            }
+
+            /* ========================================================= */
+            /* PÁGINA 2: Tabla Cuantitativa + Conclusiones Auditadas     */
+            /* ========================================================= */
+            .table-container {
+                display: block !important;
+                background: #ffffff !important;
+                border: 1px solid #cbd5e1 !important;
+                box-shadow: none !important;
+                padding: 12px 14px !important;
+                page-break-before: always !important; /* INICIO DE PÁGINA 2 */
+                break-before: page !important;
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+                margin-top: 10px !important;
+            }
+
+            table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+            }
+
+            thead {
+                display: table-header-group !important;
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+            }
+
+            tbody tr {
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+            }
+
+            table th {
+                background: #f1f5f9 !important;
+                color: #0f172a !important;
+                border-bottom: 2px solid #cbd5e1 !important;
+                padding: 6px 8px !important;
+                font-size: 0.74rem !important;
+            }
+
+            table td {
+                color: #1e293b !important;
+                border-bottom: 1px solid #e2e8f0 !important;
+                padding: 6px 8px !important;
+                font-size: 0.76rem !important;
+            }
+
+            .interpretation-header {
+                margin-top: 14px !important;
+                break-after: avoid !important;
+                page-break-after: avoid !important;
+            }
+
+            .interpretation-grid {
+                gap: 8px !important;
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+                margin-top: 6px !important;
+                break-after: page !important;
+                page-break-after: always !important; /* FIN DE PÁGINA 2 */
+            }
+
+            .interp-box {
+                background: #ffffff !important;
+                border: 1px solid #cbd5e1 !important;
+                padding: 10px 14px !important;
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+            }
+
+            .interp-box h4 {
+                font-size: 0.8rem !important;
+                margin-bottom: 3px !important;
+            }
+
+            .interp-box p {
+                color: #334155 !important;
+                font-size: 0.74rem !important;
+                line-height: 1.38 !important;
+            }
+
+            .interp-pns { border-left: 4px solid #047857 !important; }
+            .interp-sns { border-left: 4px solid #be123c !important; }
+            .interp-rec { border-left: 4px solid #0369a1 !important; }
+
+            .status-badge, #review-status-badge {
+                border: 1px solid !important;
+                font-size: 0.74rem !important;
+                padding: 3px 8px !important;
+            }
+
+            /* ========================================================= */
+            /* PÁGINAS 3 Y 4: Seguimiento Longitudinal Completo          */
+            /* ========================================================= */
+            #tab-longitudinal {
+                display: block !important;
+                margin-top: 0 !important;
+            }
+
+            /* Encabezado visible en impresión para la sección longitudinal */
+            .print-long-header {
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                background: #f8fafc !important;
+                border: 1px solid #cbd5e1 !important;
+                padding: 6px 12px !important;
+                margin-bottom: 6px !important;
+                border-radius: 8px !important;
+            }
+
+            .print-long-header h3 {
+                font-size: 0.95rem !important;
+                color: #0369a1 !important;
+                margin: 0 !important;
+            }
+
+            /* Bloque 1: Fases 1, 2 y 3 (Página 3) */
+            .longitudinal-block-1 {
+                display: block !important;
+                break-after: page !important;
+                page-break-after: always !important; /* FIN DE PÁGINA 3 */
+                margin-top: 10px !important;
+            }
+
+            /* Bloque 2: Fases 4, 5 y 6 (Página 4) */
+            .longitudinal-block-2 {
+                display: block !important;
+                margin-top: 10px !important;
+            }
+
+            .charts-grid-3 {
+                display: flex !important;
+                flex-wrap: wrap !important;
+                justify-content: center !important;
+                gap: 8px !important;
+                margin-top: 6px !important;
+            }
+
+            .charts-grid-3 .chart-card {
+                width: calc(50% - 4px) !important;
+                max-width: calc(50% - 4px) !important;
+                background: #ffffff !important;
+                border: 1px solid #cbd5e1 !important;
+                padding: 6px 10px !important;
+                box-sizing: border-box !important;
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+            }
+
+            .charts-grid-3 .chart-card svg {
+                max-height: 150px !important;
+                height: 150px !important;
+                width: 100% !important;
+            }
+
+            #longitudinal-warning {
+                background: #fffbeb !important;
+                border: 1px solid #f59e0b !important;
+                color: #b45309 !important;
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+                margin-top: 4px !important;
+                margin-bottom: 6px !important;
+                padding: 6px 12px !important;
+                font-size: 0.74rem !important;
+            }
+
+            .longitudinal-method-note {
+                margin-top: 8px !important;
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="tooltip"></div>
+
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="header-title">
+                <h1>Reporte de Evaluación Autonómica Cardiovascular (HRV)</h1>
+                <p>Paciente: <span id="patient-name-span" style="color: var(--text-main); font-weight: 600;">Cargando...</span> | <span class="print-only" id="print-session-date" style="color: #0369a1; font-weight: 600;">Fecha: --/--/----</span><span class="screen-only" id="screen-protocol-text">Protocolo 6 Fases (20 min) | Evaluación Periódica y Línea Base</span></p>
+            </div>
+            <div class="header-controls">
+                <div class="session-selector-container">
+                    <span class="session-selector-label">📅 Sesión:</span>
+                    <select id="session-select" onchange="onSessionChange(this.value)" title="Seleccionar sesión para evaluar">
+                        <!-- Opciones dinámicas -->
+                    </select>
+                </div>
+                <div class="status-badge" id="patient-status-badge">
+                    ● Flexibilidad Autonómica Normal
+                </div>
+                <button class="btn-pdf-download" onclick="window.print()" title="Imprimir o guardar como PDF">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    Descargar PDF
+                </button>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('single')">Evaluación de la Sesión (<span id="tab-single-date">--/--/----</span>)</button>
+            <button class="tab-btn" onclick="switchTab('longitudinal')">Línea Base Longitudinal (Media Móvil 7d ± 0.5
+                SD)</button>
+        </div>
+
+        <!-- ================= TAB 1: SINGLE SESSION ================= -->
+        <div id="tab-single" class="tab-content active">
+            <!-- KPI Cards -->
+            <div class="kpi-grid">
+                <div class="card">
+                    <span class="card-header">FC Basal Reposo</span>
+                    <span class="card-value" style="color: var(--accent-hr);" id="kpi-basal-hr">- <small style="font-size: 0.9rem;">lpm</small></span>
+                    <span class="card-desc" id="kpi-basal-hr-desc">Bradicardia fisiológica de reposo</span>
+                </div>
+                <div class="card">
+                    <span class="card-header">Pico Reactividad Vagal</span>
+                    <span class="card-value" style="color: var(--accent-pns);" id="kpi-vagal-react">- <small style="font-size: 0.9rem;">ms</small></span>
+                    <span class="card-desc">RMSSD durante respiración a 12 rpm</span>
+                </div>
+                <div class="card">
+                    <span class="card-header">Pico Simpático (Ruffier)</span>
+                    <span class="card-value" style="color: var(--accent-sns);" id="kpi-symp-peak">-</span>
+                    <span class="card-desc" id="kpi-symp-peak-desc">Índice SNS (FC pico: - lpm)</span>
+                </div>
+                <div class="card">
+                    <span class="card-header">Recuperación Post-Esfuerzo</span>
+                    <span class="card-value" style="color: var(--accent-hf);" id="kpi-rec-rmssd">- <small style="font-size: 0.9rem;">ms</small></span>
+                    <span class="card-desc" id="kpi-rec-desc">RMSSD restaurado > basal (- ms)</span>
+                </div>
+            </div>
+
+            <!-- Single Session Charts (2x2) -->
+            <div class="charts-grid-2">
+                <div class="chart-card">
+                    <div class="chart-header-row">
+                        <span class="chart-title">Respuesta Cronotrópica y Vagal (FC vs. RMSSD)</span>
+                        <div class="chart-legend">
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: var(--accent-hr);"></div>FC Media
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: var(--accent-pns);"></div>RMSSD
+                            </div>
+                        </div>
+                    </div>
+                    <div class="svg-container" id="container-chart1"></div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header-row">
+                        <span class="chart-title">Balance Autonómico Kubios (PNS vs. SNS Index)</span>
+                        <div class="chart-legend">
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: var(--accent-pns);"></div>PNS
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: var(--accent-sns);"></div>SNS
+                            </div>
+                        </div>
+                    </div>
+                    <div class="svg-container" id="container-chart2"></div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header-row">
+                        <span class="chart-title">Distribución Espectral de Potencia (%)</span>
+                        <div class="chart-legend">
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: var(--accent-hf);"></div>HF
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: var(--accent-lf);"></div>LF
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: var(--accent-vlf);"></div>VLF
+                            </div>
+                        </div>
+                    </div>
+                    <div class="svg-container" id="container-chart3"></div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header-row">
+                        <span class="chart-title">Dinámica No Lineal (Poincaré SD1 / SD2)</span>
+                        <div class="chart-legend">
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: var(--accent-sd1);"></div>SD1
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: var(--accent-sd2);"></div>SD2
+                            </div>
+                        </div>
+                    </div>
+                    <div class="svg-container" id="container-chart4"></div>
+                </div>
+            </div>
+
+            <!-- Quantitative Table -->
+            <div class="table-container">
+                <div class="chart-title" style="margin-bottom: 12px;">Resumen Cuantitativo por Fases</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fase del Protocolo</th>
+                            <th>FC Media (lpm)</th>
+                            <th>SDNN (ms)</th>
+                            <th>RMSSD (ms)</th>
+                            <th>PNS Index</th>
+                            <th>SNS Index</th>
+                            <th>LF/HF (FFT)</th>
+                            <th>Stress Index</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>1. DS (Decúbito Supino)</strong></td>
+                            <td>60.4</td>
+                            <td>58.8</td>
+                            <td>39.1</td>
+                            <td style="color: var(--accent-pns); font-weight: 600;">+0.15</td>
+                            <td>-0.54</td>
+                            <td>20.98</td>
+                            <td>7.47</td>
+                        </tr>
+                        <tr>
+                            <td><strong>2. RC10 (Respiración 10 rpm)</strong></td>
+                            <td>61.0</td>
+                            <td>70.1</td>
+                            <td>75.2</td>
+                            <td style="color: var(--accent-pns); font-weight: 600;">+1.23</td>
+                            <td>-0.63</td>
+                            <td>0.08</td>
+                            <td>7.69</td>
+                        </tr>
+                        <tr>
+                            <td><strong>3. RC12 (Respiración 12 rpm)</strong></td>
+                            <td>61.7</td>
+                            <td>77.3</td>
+                            <td>94.6</td>
+                            <td style="color: var(--accent-pns); font-weight: 600;">+1.76</td>
+                            <td>-0.65</td>
+                            <td>0.10</td>
+                            <td>7.63</td>
+                        </tr>
+                        <tr>
+                            <td><strong>4. ORT (Reto Ortostático)</strong></td>
+                            <td>67.0</td>
+                            <td>52.4</td>
+                            <td>30.2</td>
+                            <td>-0.56</td>
+                            <td>-0.10</td>
+                            <td>14.88</td>
+                            <td>7.40</td>
+                        </tr>
+                        <tr>
+                            <td><strong>5. RUFF (Test de Ruffier)</strong></td>
+                            <td>91.8</td>
+                            <td>31.2</td>
+                            <td>13.8</td>
+                            <td>-2.16</td>
+                            <td style="color: var(--accent-sns); font-weight: 600;">+3.13</td>
+                            <td>19.33</td>
+                            <td>17.52</td>
+                        </tr>
+                        <tr>
+                            <td><strong>6. REC (Recuperación)</strong></td>
+                            <td>65.4</td>
+                            <td>48.1</td>
+                            <td>42.3</td>
+                            <td>-0.02</td>
+                            <td>-0.21</td>
+                            <td>1.86</td>
+                            <td>8.13</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Interpretation -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; margin-bottom: 0.8rem;">
+                <h3 style="font-size: 1.05rem; font-weight: 600; color: var(--text-main); margin: 0;">Interpretación Clínica y Síntesis</h3>
+                <span id="review-status-badge" style="font-size: 0.75rem; font-weight: 600; padding: 4px 12px; border-radius: 9999px; border: 1px solid var(--border);">⏳ Pendiente de Revisión Médica</span>
+            </div>
+            <div class="interpretation-grid">
+                <div class="interp-box interp-pns">
+                    <h4>1. Reserva Vagal y Acoplamiento Respiratorio</h4>
+                    <p id="interp-pns-text">Marcada amplificación parasimpática durante la respiración pautada (RMSSD de 39.1 a 94.6 ms y HF
+                        relativo >90%). Confirma un acoplamiento cardiorrespiratorio normal y alta capacidad de
+                        modulación vagal.</p>
+                </div>
+                <div class="interp-box interp-sns">
+                    <h4>2. Tolerancia Ortostática y Carga Dinámica</h4>
+                    <p id="interp-sns-text">Respuesta barorrefleja intacta sin taquicardia postural patológica (+6.6 lpm). Adecuada
+                        activación simpática durante las 30 sentadillas (SNS index +3.13, FC pico 103 lpm) con repliegue
+                        vagal transitorio.</p>
+                </div>
+                <div class="interp-box interp-rec">
+                    <h4>3. Cinética de Restauración Homeostática</h4>
+                    <p id="interp-rec-text">Excelente reactivación vagal post-esfuerzo: el RMSSD recupera a 42.3 ms superando el valor basal
+                        y el balance LF/HF se restablece a 1.86 en los 6 minutos posteriores al ejercicio.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB 2: LONGITUDINAL BASELINE ================= -->
+        <div id="tab-longitudinal" class="tab-content">
+            <!-- Controls & Sub-header (Screen only) -->
+            <div class="controls-bar">
+                <div class="metric-toggle">
+                    <button class="metric-btn active" id="btn-rmssd" onclick="setLongitudinalMetric('rmssd')">RMSSD
+                        (ms)</button>
+                    <button class="metric-btn" id="btn-lfhf" onclick="setLongitudinalMetric('lfhf')">Relación LF /
+                        HF</button>
+                </div>
+                <div class="info-pill">
+                    Historial registrado: <span id="reg-count">0 sesiones</span> &nbsp;|&nbsp;
+                    Línea Base: <span>Ventana Móvil 7 Registros (SWC: ±0.5 SD)</span>
+                </div>
+            </div>
+
+            <!-- Warning message for < 7 sessions -->
+            <div id="longitudinal-warning" style="display: none; background: rgba(245, 158, 11, 0.12); border: 1px solid var(--accent-lf); padding: 10px 18px; border-radius: 8px; font-size: 0.82rem; color: var(--accent-lf); font-weight: 500; margin-bottom: 8px;">
+                ⚠️ Se requieren al menos 7 sesiones para calcular la línea base móvil y el rango de normalidad (actualmente hay <span id="warning-session-count">0</span>). Se muestran únicamente los puntos de datos individuales de cada sesión.
+            </div>
+
+            <!-- ================= SECCIÓN 1: FASES 1, 2 Y 3 (PÁGINA 3) ================= -->
+            <div class="longitudinal-block-1">
+                <!-- Print-only Longitudinal Header -->
+                <div class="print-long-header">
+                    <h3>Seguimiento y Línea Base Longitudinal (Fases de Reposo & Respiración)</h3>
+                    <span class="info-pill" style="font-size: 0.72rem; padding: 2px 8px;">Ventana Móvil 7 Registros | SWC: ±0.5 SD</span>
+                </div>
+
+                <div class="charts-grid-3">
+                    <!-- Phase 1 -->
+                    <div class="chart-card" id="long-card-1">
+                        <div class="chart-header-row">
+                            <span class="chart-title">Fase 1: Decúbito Supino (DS)</span>
+                            <div class="chart-legend">
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background: var(--accent-hr);"></div>Valor Sesión
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background: var(--accent-pns);"></div>Media 7d
+                                </div>
+                            </div>
+                        </div>
+                        <div class="svg-container" id="long-chart-1"></div>
+                    </div>
+
+                    <!-- Phase 2 -->
+                    <div class="chart-card" id="long-card-2">
+                        <div class="chart-header-row">
+                            <span class="chart-title">Fase 2: Resp. 10 rpm (RC10)</span>
+                            <div class="chart-legend">
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background: var(--accent-hr);"></div>Valor Sesión
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background: var(--accent-pns);"></div>Media 7d
+                                </div>
+                            </div>
+                        </div>
+                        <div class="svg-container" id="long-chart-2"></div>
+                    </div>
+
+                    <!-- Phase 3 -->
+                    <div class="chart-card" id="long-card-3">
+                        <div class="chart-header-row">
+                            <span class="chart-title">Fase 3: Resp. 12 rpm (RC12)</span>
+                            <div class="chart-legend">
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background: var(--accent-hr);"></div>Valor Sesión
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background: var(--accent-pns);"></div>Media 7d
+                                </div>
+                            </div>
+                        </div>
+                        <div class="svg-container" id="long-chart-3"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= SECCIÓN 2: FASES 4, 5 Y 6 (PÁGINA 4) ================= -->
+            <div class="longitudinal-block-2">
+                <!-- Print-only Sub-Header for Page 4 -->
+                <div class="print-long-header">
+                    <h3>Seguimiento y Línea Base Longitudinal (Fases de Reto & Recuperación)</h3>
+                    <span class="info-pill" style="font-size: 0.72rem; padding: 2px 8px;">Ventana Móvil 7 Registros | SWC: ±0.5 SD</span>
+                </div>
+
+                <div class="charts-grid-3">
+                    <!-- Phase 4 -->
+                    <div class="chart-card" id="long-card-4">
+                        <div class="chart-header-row">
+                            <span class="chart-title">Fase 4: Reto Ortostático (ORT)</span>
+                            <div class="chart-legend">
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background: var(--accent-hr);"></div>Valor Sesión
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background: var(--accent-pns);"></div>Media 7d
+                                </div>
+                            </div>
+                        </div>
+                        <div class="svg-container" id="long-chart-4"></div>
+                    </div>
+
+                    <!-- Phase 5 -->
+                    <div class="chart-card" id="long-card-5">
+                        <div class="chart-header-row">
+                            <span class="chart-title">Fase 5: Test de Ruffier (RUFF)</span>
+                            <div class="chart-legend">
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background: var(--accent-hr);"></div>Valor Sesión
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background: var(--accent-pns);"></div>Media 7d
+                                </div>
+                            </div>
+                        </div>
+                        <div class="svg-container" id="long-chart-5"></div>
+                    </div>
+
+                    <!-- Phase 6 -->
+                    <div class="chart-card" id="long-card-6">
+                        <div class="chart-header-row">
+                            <span class="chart-title">Fase 6: Recuperación (REC)</span>
+                            <div class="chart-legend">
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background: var(--accent-hr);"></div>Valor Sesión
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background: var(--accent-pns);"></div>Media 7d
+                                </div>
+                            </div>
+                        </div>
+                        <div class="svg-container" id="long-chart-6"></div>
+                    </div>
+                </div>
+
+                <!-- Longitudinal Method Note -->
+                <div class="interp-box interp-pns longitudinal-method-note">
+                    <h4>Metodología de Normalidad Individual (Smallest Worthwhile Change - SWC)</h4>
+                    <p>Las primeras 6 pruebas se representan como puntos individuales de adquisición. A partir del registro
+                        7, se despliega el sombreado azul correspondiente al <strong>rango de normalidad individual</strong>
+                        y la línea verde de tendencia móvil. Los puntos situados fuera de la banda señalan fluctuaciones
+                        significativas en el estado neurovegetativo del paciente frente a su propia media histórica.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DATOS DINÁMICOS PARSEADOS -->
+    <script src="data_dinamica/data.js"></script>
+
+    <!-- SCRIPT DE CONTROL Y RENDERIZADO -->
+    <script>
+        // Global Tooltip Management via Event Delegation
+        const tooltip = document.getElementById('tooltip');
+
+        document.addEventListener('mouseover', (e) => {
+            const target = e.target.closest('[data-tooltip]');
+            if (target) {
+                tooltip.innerHTML = target.getAttribute('data-tooltip');
+                tooltip.style.opacity = '1';
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (tooltip.style.opacity === '1') {
+                tooltip.style.left = (e.clientX + 14) + 'px';
+                tooltip.style.top = (e.clientY - 28) + 'px';
+            }
+        });
+
+        document.addEventListener('mouseout', (e) => {
+            const target = e.target.closest('[data-tooltip]');
+            if (target) {
+                tooltip.style.opacity = '0';
+            }
+        });
+
+        // Tab Switching
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+            if (tabId === 'single') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('tab-single').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('tab-longitudinal').classList.add('active');
+                renderAllLongitudinalCharts();
+            }
+        }
+
+        // Fallback en caso de que no esté definido patientData en data.js
+        const activeData = (typeof patientData !== 'undefined') ? patientData : {
+            patient_name: "Sin Paciente Cargado",
+            sessions: []
+        };
+
+        const sessions = activeData.sessions;
+        let currentMetric = 'rmssd';
+
+        // Cargar y renderizar la evaluación para una sesión específica
+        function loadSessionEvaluation(sessionIndex) {
+            const session = sessions[sessionIndex];
+            if (!session) return;
+
+            const sessionDateText = session.full_date || session.date;
+            const sessionNum = session.session || (sessionIndex + 1);
+
+            // Actualizar fecha en cabecera de impresión y en el botón de la pestaña
+            const printDateEl = document.getElementById('print-session-date');
+            if (printDateEl) {
+                printDateEl.textContent = `Fecha: ${sessionDateText} (Sesión #${sessionNum})`;
+            }
+            const tabDateEl = document.getElementById('tab-single-date');
+            if (tabDateEl) {
+                tabDateEl.textContent = sessionDateText;
+            }
+
+            // 1. Cargar KPIs de la Sesión
+            document.getElementById('kpi-basal-hr').innerHTML = `${session.hr[0]} <small style="font-size: 0.9rem;">lpm</small>`;
+            document.getElementById('kpi-vagal-react').innerHTML = `${session.rmssd[2]} <small style="font-size: 0.9rem;">ms</small>`;
+            
+            const snsVal = session.sns[4];
+            const snsValText = snsVal >= 0 ? `+${snsVal.toFixed(2)}` : snsVal.toFixed(2);
+            document.getElementById('kpi-symp-peak').textContent = snsValText;
+            document.getElementById('kpi-symp-peak-desc').textContent = `Índice SNS (FC pico: ${session.hr[4]} lpm)`;
+            
+            document.getElementById('kpi-rec-rmssd').innerHTML = `${session.rmssd[5]} <small style="font-size: 0.9rem;">ms</small>`;
+            document.getElementById('kpi-rec-desc').textContent = `RMSSD restaurado > basal (${session.rmssd[0]} ms)`;
+
+            // 1.5 Actualizar el Badge de Estado Clínico
+            updateStatusBadge(session);
+
+            // 2. Poblar la tabla cuantitativa
+            populateQuantitativeTable(session);
+
+            // 3. Poblar las cajas de interpretación
+            populateInterpretations(session);
+
+            // 4. Renderizar gráficos de Sesión Única
+            renderSingleSessionCharts(session);
+        }
+
+        // Manejador del cambio de sesión en el dropdown
+        function onSessionChange(indexStr) {
+            const idx = parseInt(indexStr, 10);
+            if (!isNaN(idx)) {
+                loadSessionEvaluation(idx);
+            }
+        }
+
+        // Inicializar Dashboard
+        function initDashboard() {
+            // Actualizar nombre de paciente
+            document.getElementById('patient-name-span').textContent = activeData.patient_name;
+            
+            const count = sessions.length;
+            document.getElementById('reg-count').textContent = `${count} sesión${count !== 1 ? 'es' : ''}`;
+
+            const selectEl = document.getElementById('session-select');
+            if (selectEl) {
+                selectEl.innerHTML = '';
+            }
+
+            if (count === 0) {
+                document.getElementById('patient-name-span').textContent = "Sin datos de paciente";
+                const tabDateEl = document.getElementById('tab-single-date');
+                if (tabDateEl) tabDateEl.textContent = "--/--/----";
+                if (selectEl) {
+                    selectEl.innerHTML = '<option value="">Sin sesiones</option>';
+                }
+                return;
+            }
+
+            // Poblar el selector de sesiones (orden cronológico)
+            if (selectEl) {
+                sessions.forEach((s, idx) => {
+                    const opt = document.createElement('option');
+                    opt.value = idx;
+                    const isLatest = (idx === count - 1) ? ' (Última)' : '';
+                    opt.textContent = `${s.full_date || s.date} - Sesión #${s.session || (idx + 1)}${isLatest}`;
+                    if (idx === count - 1) {
+                        opt.selected = true;
+                    }
+                    selectEl.appendChild(opt);
+                });
+            }
+
+            // Cargar por defecto la última sesión en la pestaña de Evaluación
+            loadSessionEvaluation(count - 1);
+
+            // 5. Configurar advertencia de cantidad de datos para el longitudinal
+            const warningEl = document.getElementById('longitudinal-warning');
+            const warningCountEl = document.getElementById('warning-session-count');
+            if (count < 7) {
+                warningEl.style.display = 'block';
+                warningCountEl.textContent = count;
+            } else {
+                warningEl.style.display = 'none';
+            }
+
+            // 6. Si hay datos, renderizar longitudinal con todas las sesiones
+            renderAllLongitudinalCharts();
+        }
+
+        // Determinar el Estado Clínico según índices basales de reposo (Fase 1: DS)
+        function updateStatusBadge(session) {
+            const pnsBasal = session.pns[0];
+            const snsBasal = session.sns[0];
+            
+            let statusText = "● Flexibilidad Autonómica Normal";
+            let color = "#10b981"; // verde
+            let bg = "rgba(16, 185, 129, 0.12)";
+            
+            if (snsBasal > 2.0) {
+                statusText = "● Estado de Estrés Simpático";
+                color = "#f43f5e"; // rojo
+                bg = "rgba(244, 63, 94, 0.12)";
+            } else if (pnsBasal < -2.0) {
+                statusText = "● Tono Vagal Deprimido";
+                color = "#f59e0b"; // amarillo/naranja
+                bg = "rgba(245, 158, 11, 0.12)";
+            } else if (pnsBasal > 2.0 && snsBasal < -2.0) {
+                statusText = "● Predominio Vagal Basal";
+                color = "#38bdf8"; // celeste
+                bg = "rgba(56, 189, 248, 0.12)";
+            }
+            
+            const badge = document.getElementById('patient-status-badge');
+            badge.textContent = statusText;
+            badge.style.color = color;
+            badge.style.borderColor = color;
+            badge.style.backgroundColor = bg;
+        }
+
+        // Tabla Cuantitativa Dinámica
+        function populateQuantitativeTable(session) {
+            const tbody = document.querySelector('table tbody');
+            tbody.innerHTML = '';
+            const phaseNames = [
+                "1. DS (Decúbito Supino)",
+                "2. RC10 (Respiración 10 rpm)",
+                "3. RC12 (Respiración 12 rpm)",
+                "4. ORT (Reto Ortostático)",
+                "5. RUFF (Test de Ruffier)",
+                "6. REC (Recuperación)"
+            ];
+            for (let i = 0; i < 6; i++) {
+                const tr = document.createElement('tr');
+                
+                const pnsVal = session.pns[i];
+                const pnsStyle = (i === 0 || i === 1 || i === 2) ? 'style="color: var(--accent-pns); font-weight: 600;"' : '';
+                const pnsText = pnsVal >= 0 ? `+${pnsVal.toFixed(2)}` : pnsVal.toFixed(2);
+                
+                const snsVal = session.sns[i];
+                const snsStyle = (i === 4) ? 'style="color: var(--accent-sns); font-weight: 600;"' : '';
+                const snsText = snsVal >= 0 ? `+${snsVal.toFixed(2)}` : snsVal.toFixed(2);
+                
+                tr.innerHTML = `
+                    <td><strong>${phaseNames[i]}</strong></td>
+                    <td>${session.hr[i] !== null ? session.hr[i].toFixed(1) : '-'}</td>
+                    <td>${session.sdnn[i] !== null ? session.sdnn[i].toFixed(1) : '-'}</td>
+                    <td>${session.rmssd[i] !== null ? session.rmssd[i].toFixed(1) : '-'}</td>
+                    <td ${pnsStyle}>${pnsText}</td>
+                    <td ${snsStyle}>${snsText}</td>
+                    <td>${session.lfhf[i] !== null ? session.lfhf[i].toFixed(2) : '-'}</td>
+                    <td>${session.stress[i] !== null ? session.stress[i].toFixed(2) : '-'}</td>
+                `;
+                tbody.appendChild(tr);
+            }
+        }
+
+        // Interpretaciones Dinámicas (Cargadas de la base de datos o archivo TXT)
+        function populateInterpretations(session) {
+            const defaultText = "No se ha realizado el análisis";
+            const conclusions = session.conclusions || { pns: defaultText, sns: defaultText, rec: defaultText };
+            
+            document.getElementById('interp-pns-text').textContent = conclusions.pns || defaultText;
+            document.getElementById('interp-sns-text').textContent = conclusions.sns || defaultText;
+            document.getElementById('interp-rec-text').textContent = conclusions.rec || defaultText;
+
+            // Actualizar Badge de Estado de Revisión Médica
+            const reviewBadge = document.getElementById('review-status-badge');
+            if (reviewBadge) {
+                if (session.reviewed === true) {
+                    reviewBadge.textContent = "✓ Conclusiones Validadas por Médico";
+                    reviewBadge.style.color = "#10b981";
+                    reviewBadge.style.borderColor = "#10b981";
+                    reviewBadge.style.backgroundColor = "rgba(16, 185, 129, 0.12)";
+                } else {
+                    reviewBadge.textContent = "⏳ Pendiente de Revisión Médica";
+                    reviewBadge.style.color = "#f59e0b";
+                    reviewBadge.style.borderColor = "#f59e0b";
+                    reviewBadge.style.backgroundColor = "rgba(245, 158, 11, 0.12)";
+                }
+            }
+        }
+
+        // Tab Switching
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+            if (tabId === 'single') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('tab-single').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('tab-longitudinal').classList.add('active');
+                renderAllLongitudinalCharts();
+            }
+        }
+
+        function setLongitudinalMetric(metric) {
+            currentMetric = metric;
+            document.getElementById('btn-rmssd').classList.toggle('active', metric === 'rmssd');
+            document.getElementById('btn-lfhf').classList.toggle('active', metric === 'lfhf');
+            renderAllLongitudinalCharts();
+        }
+
+        function computeRollingBaseline(dataArray) {
+            const results = [];
+            for (let i = 0; i < dataArray.length; i++) {
+                if (i < 6) {
+                    results.push({ mean: null, upper: null, lower: null, valid: false });
+                } else {
+                    const windowSlice = dataArray.slice(i - 6, i + 1);
+                    const mean = windowSlice.reduce((a, b) => a + b, 0) / 7;
+                    const variance = windowSlice.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / 7;
+                    const sd = Math.sqrt(variance);
+                    const swc = 0.5 * sd;
+                    results.push({
+                        mean: Number(mean.toFixed(2)),
+                        upper: Number((mean + swc).toFixed(2)),
+                        lower: Number((mean - swc).toFixed(2)),
+                        valid: true
+                    });
+                }
+            }
+            return results;
+        }
+
+        function renderLongitudinalChart(containerId, phaseIndex) {
+            if (sessions.length === 0) return;
+            
+            // Map data
+            const rawData = sessions.map(s => currentMetric === 'rmssd' ? s.rmssd[phaseIndex - 1] : s.lfhf[phaseIndex - 1]);
+            const baseline = computeRollingBaseline(rawData);
+            const unit = currentMetric === 'rmssd' ? 'ms' : '';
+
+            const svgW = 420, svgH = 200;
+            const padL = 45, padR = 20, padT = 20, padB = 30;
+            const chartW = svgW - padL - padR, chartH = svgH - padT - padB;
+
+            const allVals = [...rawData];
+            baseline.forEach(b => { if (b.valid) { allVals.push(b.upper); allVals.push(b.lower); } });
+            let minVal = Math.min(...allVals);
+            let maxVal = Math.max(...allVals);
+            const margin = (maxVal - minVal) * 0.25 || 1;
+            minVal = Math.max(0, minVal - margin);
+            maxVal = maxVal + margin;
+
+            const getX = (i) => {
+                if (sessions.length <= 1) return padL + chartW / 2;
+                return padL + (i / (sessions.length - 1)) * chartW;
+            };
+            const getY = (val) => padT + chartH - ((val - minVal) / (maxVal - minVal)) * chartH;
+
+            let grid = '';
+            const numTicks = 4;
+            for (let t = 0; t <= numTicks; t++) {
+                let v = minVal + (t / numTicks) * (maxVal - minVal);
+                let y = getY(v);
+                let labelVal = currentMetric === 'rmssd' ? Math.round(v) : v.toFixed(2);
+                grid += `<line x1="${padL}" y1="${y}" x2="${svgW - padR}" y2="${y}" class="grid-line" />`;
+                grid += `<text x="${padL - 6}" y="${y + 3}" class="axis-label" text-anchor="end">${labelVal}</text>`;
+            }
+
+            // Render dynamic dates on the X axis
+            const labelIndices = [];
+            if (sessions.length > 1) {
+                if (sessions.length <= 7) {
+                    for (let i = 0; i < sessions.length; i++) {
+                        labelIndices.push(i);
+                    }
+                } else {
+                    labelIndices.push(0);
+                    labelIndices.push(Math.floor(sessions.length / 2));
+                    labelIndices.push(sessions.length - 1);
+                }
+            } else if (sessions.length === 1) {
+                labelIndices.push(0);
+            }
+
+            labelIndices.forEach(idx => {
+                grid += `<text x="${getX(idx)}" y="${svgH - 8}" class="axis-label" text-anchor="middle">${sessions[idx].date}</text>`;
+            });
+
+            // Shaded SWC area and Mean line (only if sessions count >= 7)
+            let areaPath = '';
+            let meanLine = '';
+            
+            if (sessions.length >= 7) {
+                let upperPoints = [];
+                let lowerPoints = [];
+
+                for (let i = 6; i < sessions.length; i++) {
+                    upperPoints.push(`${getX(i)},${getY(baseline[i].upper)}`);
+                    lowerPoints.unshift(`${getX(i)},${getY(baseline[i].lower)}`);
+                }
+                if (upperPoints.length > 0) {
+                    areaPath = `<polygon points="${upperPoints.join(' ')} ${lowerPoints.join(' ')}" fill="rgba(56, 189, 248, 0.18)" stroke="rgba(56, 189, 248, 0.4)" stroke-width="1" stroke-dasharray="3,3" />`;
+                }
+
+                let meanPathData = [];
+                for (let i = 6; i < sessions.length; i++) {
+                    meanPathData.push(`${i === 6 ? 'M' : 'L'} ${getX(i)} ${getY(baseline[i].mean)}`);
+                }
+                if (meanPathData.length > 0) {
+                    meanLine = `<path d="${meanPathData.join(' ')}" fill="none" stroke="#10b981" stroke-width="2.2" />`;
+                }
+            }
+
+            const lineRaw = rawData.map((d, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(d)}`).join(' ');
+            let pointsSvg = '';
+
+            rawData.forEach((d, i) => {
+                let s = sessions[i];
+                let b = baseline[i];
+                let info = `&lt;b&gt;Sesión ${s.session} (${s.date})&lt;/b&gt;&lt;br&gt;${currentMetric.toUpperCase()}: ${d} ${unit}`;
+                if (b && b.valid && sessions.length >= 7) {
+                    info += `&lt;br&gt;&lt;span style='color:#10b981;'&gt;Media 7d: ${b.mean} ${unit}&lt;/span&gt;&lt;br&gt;&lt;span style='color:#38bdf8;'&gt;Rango: ${b.lower} - ${b.upper}&lt;/span&gt;`;
+                } else {
+                    info += `&lt;br&gt;&lt;i style='color:#94a3b8;'&gt;Construyendo línea base (${i + 1}/7)&lt;/i&gt;`;
+                }
+
+                pointsSvg += `<circle cx="${getX(i)}" cy="${getY(d)}" r="3.5" fill="#38bdf8" stroke="#0b1120" stroke-width="1.5" class="data-point" data-tooltip="${info}" />`;
+            });
+
+            document.getElementById(containerId).innerHTML = `
+                <svg viewBox="0 0 ${svgW} ${svgH}">
+                    ${grid}
+                    ${areaPath}
+                    <path d="${lineRaw}" fill="none" stroke="rgba(56, 189, 248, 0.45)" stroke-width="1.2" />
+                    ${meanLine}
+                    ${pointsSvg}
+                </svg>
+            `;
+        }
+
+        function renderAllLongitudinalCharts() {
+            for (let p = 1; p <= 6; p++) {
+                renderLongitudinalChart(`long-chart-${p}`, p);
+            }
+        }
+
+        // ==========================================
+        // RENDERIZADO TAB 1 (Sesión Única)
+        // ==========================================
+        const phasesNames = ['DS', 'RC10', 'RC12', 'ORT', 'RUFF', 'REC'];
+
+        function renderSingleSessionCharts(session) {
+            // Chart 1: FC vs RMSSD
+            (function () {
+                const hrData = session.hr;
+                const rmssdData = session.rmssd;
+                const svgW = 500, svgH = 200, padL = 40, padR = 40, padT = 15, padB = 25;
+                const chartW = svgW - padL - padR, chartH = svgH - padT - padB;
+
+                const getX = (i) => padL + (i + 0.5) * (chartW / 6);
+                const getY_HR = (val) => padT + chartH - ((val - 40) / (110 - 40)) * chartH;
+                const getY_RMSSD = (val) => padT + chartH - ((val - 0) / (110 - 0)) * chartH;
+
+                let grid = '';
+                [40, 60, 80, 100].forEach(v => {
+                    let y = getY_HR(v);
+                    grid += `<line x1="${padL}" y1="${y}" x2="${svgW - padR}" y2="${y}" class="grid-line" />`;
+                    grid += `<text x="${padL - 6}" y="${y + 3}" class="axis-label" text-anchor="end" fill="#38bdf8">${v}</text>`;
+                });
+                [0, 30, 60, 90].forEach(v => {
+                    let y = getY_RMSSD(v);
+                    grid += `<text x="${svgW - padR + 6}" y="${y + 3}" class="axis-label" text-anchor="start" fill="#10b981">${v}</text>`;
+                });
+                phasesNames.forEach((p, i) => {
+                    grid += `<text x="${getX(i)}" y="${svgH - 6}" class="axis-label" text-anchor="middle">${p}</text>`;
+                });
+
+                const makePath = (data, getYFunc) => data.map((d, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getYFunc(d)}`).join(' ');
+
+                let pts = '';
+                hrData.forEach((d, i) => {
+                    pts += `<circle cx="${getX(i)}" cy="${getY_HR(d)}" r="4.5" fill="#38bdf8" stroke="#131d31" stroke-width="2" class="data-point" data-tooltip="&lt;b&gt;${phasesNames[i]}&lt;/b&gt;&lt;br&gt;FC: ${d} lpm" />`;
+                });
+                rmssdData.forEach((d, i) => {
+                    pts += `<circle cx="${getX(i)}" cy="${getY_RMSSD(d)}" r="4.5" fill="#10b981" stroke="#131d31" stroke-width="2" class="data-point" data-tooltip="&lt;b&gt;${phasesNames[i]}&lt;/b&gt;&lt;br&gt;RMSSD: ${d} ms" />`;
+                });
+
+                document.getElementById('container-chart1').innerHTML = `
+                    <svg viewBox="0 0 ${svgW} ${svgH}">
+                        ${grid}
+                        <path d="${makePath(hrData, getY_HR)}" fill="none" stroke="#38bdf8" stroke-width="2" />
+                        <path d="${makePath(rmssdData, getY_RMSSD)}" fill="none" stroke="#10b981" stroke-width="2" />
+                        ${pts}
+                    </svg>
+                `;
+            })();
+
+            // Chart 2: PNS vs SNS
+            (function () {
+                const pnsData = session.pns;
+                const snsData = session.sns;
+                const svgW = 500, svgH = 200, padL = 40, padR = 20, padT = 15, padB = 25;
+                const chartW = svgW - padL - padR, chartH = svgH - padT - padB;
+                const minVal = -3.0, maxVal = 4.0;
+                const getY = (val) => padT + chartH - ((val - minVal) / (maxVal - minVal)) * chartH;
+                const yZero = getY(0);
+
+                let grid = '';
+                [-2, 0, 2, 4].forEach(v => {
+                    let y = getY(v);
+                    grid += `<line x1="${padL}" y1="${y}" x2="${svgW - padR}" y2="${y}" stroke="${v === 0 ? '#475569' : '#1e2c42'}" stroke-width="${v === 0 ? '1.5' : '1'}" />`;
+                    grid += `<text x="${padL - 6}" y="${y + 3}" class="axis-label" text-anchor="end">${v}</text>`;
+                });
+                phasesNames.forEach((p, i) => {
+                    grid += `<text x="${padL + (i + 0.5) * (chartW / 6)}" y="${svgH - 6}" class="axis-label" text-anchor="middle">${p}</text>`;
+                });
+
+                let bars = '';
+                const barW = 14;
+                phasesNames.forEach((_, i) => {
+                    let centerX = padL + (i + 0.5) * (chartW / 6);
+                    let xPns = centerX - barW - 1, yPns = getY(Math.max(0, pnsData[i])), hPns = Math.abs(getY(pnsData[i]) - yZero);
+                    if (pnsData[i] < 0) yPns = yZero;
+
+                    let xSns = centerX + 1, ySns = getY(Math.max(0, snsData[i])), hSns = Math.abs(getY(snsData[i]) - yZero);
+                    if (snsData[i] < 0) ySns = yZero;
+
+                    bars += `<rect x="${xPns}" y="${yPns}" width="${barW}" height="${hPns}" fill="#10b981" rx="2" class="data-point" data-tooltip="&lt;b&gt;${phasesNames[i]}&lt;/b&gt;&lt;br&gt;PNS Index: ${pnsData[i]}" />`;
+                    bars += `<rect x="${xSns}" y="${ySns}" width="${barW}" height="${hSns}" fill="#f43f5e" rx="2" class="data-point" data-tooltip="&lt;b&gt;${phasesNames[i]}&lt;/b&gt;&lt;br&gt;SNS Index: ${snsData[i]}" />`;
+                });
+
+                document.getElementById('container-chart2').innerHTML = `
+                    <svg viewBox="0 0 ${svgW} ${svgH}">
+                        ${grid}
+                        ${bars}
+                    </svg>
+                `;
+            })();
+
+            // Chart 3: Spectral Power
+            (function () {
+                const hfData = session.hf;
+                const lfData = session.lf;
+                const vlfData = session.vlf;
+                const svgW = 520, svgH = 200, padL = 60, padR = 25, padT = 15, padB = 25;
+                const chartW = svgW - padL - padR, chartH = svgH - padT - padB;
+                const getY = (val) => padT + chartH - (val / 100) * chartH;
+
+                let grid = '';
+                [0, 25, 50, 75, 100].forEach(v => {
+                    let y = getY(v);
+                    grid += `<line x1="${padL}" y1="${y}" x2="${svgW - padR}" y2="${y}" class="grid-line" />`;
+                    grid += `<text x="${padL - 10}" y="${y + 3}" class="axis-label" text-anchor="end">${v}%</text>`;
+                });
+                phasesNames.forEach((p, i) => {
+                    grid += `<text x="${padL + (i + 0.5) * (chartW / 6)}" y="${svgH - 6}" class="axis-label" text-anchor="middle">${p}</text>`;
+                });
+
+                let bars = '';
+                const barW = 32;
+                phasesNames.forEach((_, i) => {
+                    let x = padL + (i + 0.5) * (chartW / 6) - (barW / 2);
+                    let vlf = vlfData[i], lf = lfData[i], hf = hfData[i];
+
+                    bars += `
+                        <g class="data-point" data-tooltip="&lt;b&gt;${phasesNames[i]}&lt;/b&gt;&lt;br&gt;HF: ${hf}%&lt;br&gt;LF: ${lf}%&lt;br&gt;VLF: ${vlf}%">
+                            <rect x="${x}" y="${getY(vlf)}" width="${barW}" height="${(vlf / 100) * chartH}" fill="#64748b" />
+                            <rect x="${x}" y="${getY(vlf + lf)}" width="${barW}" height="${(lf / 100) * chartH}" fill="#f59e0b" />
+                            <rect x="${x}" y="${getY(vlf + lf + hf)}" width="${barW}" height="${(hf / 100) * chartH}" fill="#8b5cf6" rx="2" />
+                        </g>
+                    `;
+                });
+
+                document.getElementById('container-chart3').innerHTML = `
+                    <svg viewBox="0 0 ${svgW} ${svgH}">
+                        ${grid}
+                        ${bars}
+                    </svg>
+                `;
+            })();
+
+            // Chart 4: Poincaré SD1 / SD2
+            (function () {
+                const sd1Data = session.sd1;
+                const sd2Data = session.sd2;
+                const svgW = 500, svgH = 200, padL = 40, padR = 20, padT = 15, padB = 25;
+                const chartW = svgW - padL - padR, chartH = svgH - padT - padB;
+                const getY = (val) => padT + chartH - (val / 100) * chartH;
+
+                let grid = '';
+                [0, 25, 50, 75, 100].forEach(v => {
+                    let y = getY(v);
+                    grid += `<line x1="${padL}" y1="${y}" x2="${svgW - padR}" y2="${y}" class="grid-line" />`;
+                    grid += `<text x="${padL - 6}" y="${y + 3}" class="axis-label" text-anchor="end">${v}ms</text>`;
+                });
+                phasesNames.forEach((p, i) => {
+                    grid += `<text x="${padL + (i + 0.5) * (chartW / 6)}" y="${svgH - 6}" class="axis-label" text-anchor="middle">${p}</text>`;
+                });
+
+                const makePath = (data) => data.map((d, i) => `${i === 0 ? 'M' : 'L'} ${padL + (i + 0.5) * (chartW / 6)} ${getY(d)}`).join(' ');
+
+                let pts = '';
+                sd1Data.forEach((d, i) => {
+                    pts += `<circle cx="${padL + (i + 0.5) * (chartW / 6)}" cy="${getY(d)}" r="4.5" fill="#06b6d4" stroke="#131d31" stroke-width="2" class="data-point" data-tooltip="&lt;b&gt;${phasesNames[i]}&lt;/b&gt;&lt;br&gt;SD1: ${d} ms" />`;
+                });
+                sd2Data.forEach((d, i) => {
+                    pts += `<circle cx="${padL + (i + 0.5) * (chartW / 6)}" cy="${getY(d)}" r="4.5" fill="#ec4899" stroke="#131d31" stroke-width="2" class="data-point" data-tooltip="&lt;b&gt;${phasesNames[i]}&lt;/b&gt;&lt;br&gt;SD2: ${d} ms" />`;
+                });
+
+                document.getElementById('container-chart4').innerHTML = `
+                    <svg viewBox="0 0 ${svgW} ${svgH}">
+                        ${grid}
+                        <path d="${makePath(sd1Data)}" fill="none" stroke="#06b6d4" stroke-width="2" />
+                        <path d="${makePath(sd2Data)}" fill="none" stroke="#ec4899" stroke-width="2" />
+                        ${pts}
+                    </svg>
+                `;
+            })();
+        }
+
+        // Ejecutar inicialización al cargar el DOM
+        document.addEventListener('DOMContentLoaded', initDashboard);
+    </script>
+</body>
+
+</html>
