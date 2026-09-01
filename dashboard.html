@@ -171,6 +171,116 @@
             color: var(--text-muted);
         }
 
+        /* Subjective & Readiness Card */
+        .subjective-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--accent-border);
+            border-radius: 10px;
+            padding: 16px 20px;
+        }
+
+        .subjective-grid {
+            display: grid;
+            grid-template-columns: 190px 1fr 1fr 1.1fr;
+            gap: 14px;
+            align-items: stretch;
+        }
+
+        .sub-col {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--accent-border);
+            border-radius: 8px;
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            justify-content: center;
+            box-sizing: border-box;
+            min-width: 0;
+        }
+
+        .sub-readiness-col {
+            align-items: center;
+            text-align: center;
+            background: rgba(56, 189, 248, 0.04);
+            padding: 10px 8px;
+        }
+
+        .sub-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            font-weight: 600;
+        }
+
+        .readiness-display {
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            gap: 2px;
+            margin: 2px 0;
+        }
+
+        .readiness-score {
+            font-size: 2.2rem;
+            font-weight: 800;
+            line-height: 1;
+            color: var(--accent-hr);
+        }
+
+        .readiness-max {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .readiness-pill {
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            max-width: 100%;
+            box-sizing: border-box;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .sub-val-highlight {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--accent-hr);
+        }
+
+        .sub-val {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .sub-val-text {
+            font-size: 0.8rem;
+            color: var(--text-main);
+            line-height: 1.35;
+            word-break: break-word;
+        }
+
+        @media (max-width: 950px) {
+            .subjective-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .subjective-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
         /* Charts Layouts */
         .charts-grid-2 {
             display: grid;
@@ -409,6 +519,17 @@
             border-left: 4px solid var(--accent-hf);
         }
 
+        .longitudinal-block-1,
+        .longitudinal-block-2 {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .longitudinal-method-note {
+            margin-top: 18px;
+        }
+
         /* Botón de Descarga PDF */
         .btn-pdf-download {
             background: rgba(56, 189, 248, 0.1);
@@ -601,6 +722,59 @@
                 font-size: 0.68rem !important;
             }
 
+            .subjective-card {
+                background: #ffffff !important;
+                border: 1px solid #cbd5e1 !important;
+                padding: 6px 10px !important;
+                margin-top: 4px !important;
+                margin-bottom: 6px !important;
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+            }
+
+            .subjective-grid {
+                display: grid !important;
+                grid-template-columns: 140px 1fr 1fr 1.1fr !important;
+                gap: 6px !important;
+            }
+
+            .sub-col {
+                background: #f8fafc !important;
+                border: 1px solid #cbd5e1 !important;
+                padding: 4px 6px !important;
+                gap: 3px !important;
+                min-width: 0 !important;
+                box-sizing: border-box !important;
+            }
+
+            .readiness-score {
+                font-size: 1.5rem !important;
+                color: #0369a1 !important;
+            }
+
+            .readiness-pill {
+                font-size: 0.65rem !important;
+                padding: 2px 6px !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+            }
+
+            .sub-val-highlight {
+                font-size: 0.95rem !important;
+                color: #0369a1 !important;
+            }
+
+            .sub-val, .sub-val-text {
+                font-size: 0.72rem !important;
+                color: #0f172a !important;
+            }
+
+            .sub-label {
+                font-size: 0.62rem !important;
+                color: #64748b !important;
+            }
+
+            .charts-grid-2,
             .charts-grid {
                 display: grid !important;
                 grid-template-columns: repeat(2, 1fr) !important;
@@ -882,6 +1056,71 @@
                     <span class="card-header">Recuperación Post-Esfuerzo</span>
                     <span class="card-value" style="color: var(--accent-hf);" id="kpi-rec-rmssd">- <small style="font-size: 0.9rem;">ms</small></span>
                     <span class="card-desc" id="kpi-rec-desc">RMSSD restaurado > basal (- ms)</span>
+                </div>
+            </div>
+
+            <!-- Subjective Context & Readiness Card -->
+            <div class="subjective-card" id="subjective-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid var(--accent-border); padding-bottom: 6px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 1rem;">📋</span>
+                        <h3 style="font-size: 0.88rem; font-weight: 700; color: var(--text-main); margin: 0; text-transform: uppercase; letter-spacing: 0.04em;">Contexto Subjetivo y Readiness Matutino</h3>
+                    </div>
+                    <span id="subjective-status-badge" style="font-size: 0.72rem; font-weight: 600; padding: 3px 10px; border-radius: 9999px; border: 1px solid var(--accent-border);">
+                        ⏳ Pendiente de Reporte
+                    </span>
+                </div>
+
+                <div class="subjective-grid">
+                    <!-- Columna 1: Readiness -->
+                    <div class="sub-col sub-readiness-col">
+                        <span class="sub-label">Readiness para Entrenar</span>
+                        <div class="readiness-display">
+                            <span class="readiness-score" id="sub-readiness-val">--</span>
+                            <span class="readiness-max">/10</span>
+                        </div>
+                        <div class="readiness-pill" id="sub-readiness-pill">Sin datos</div>
+                    </div>
+
+                    <!-- Columna 2: Sueño & Ánimo -->
+                    <div class="sub-col">
+                        <div>
+                            <span class="sub-label">Horas de Sueño</span>
+                            <div class="sub-val-highlight" id="sub-sleep-hours">- <small style="font-size: 0.8rem;">hrs</small></div>
+                        </div>
+                        <div>
+                            <span class="sub-label">Calidad de Sueño (Descanso)</span>
+                            <div class="sub-val" id="sub-sleep-quality">-</div>
+                        </div>
+                        <div>
+                            <span class="sub-label">Estado de Ánimo</span>
+                            <div class="sub-val" id="sub-mood">-</div>
+                        </div>
+                    </div>
+
+                    <!-- Columna 3: Dolor & Ejercicio Previo -->
+                    <div class="sub-col">
+                        <div>
+                            <span class="sub-label">Nivel de Dolor</span>
+                            <div class="sub-val" id="sub-pain">-</div>
+                        </div>
+                        <div>
+                            <span class="sub-label">Ejercicio Día Previo</span>
+                            <div class="sub-val-text" id="sub-prev-exercise">-</div>
+                        </div>
+                    </div>
+
+                    <!-- Columna 4: Hábitos & Síntomas -->
+                    <div class="sub-col">
+                        <div>
+                            <span class="sub-label">Consumo Día Previo</span>
+                            <div class="sub-val-text" id="sub-habits">-</div>
+                        </div>
+                        <div>
+                            <span class="sub-label">Otros Síntomas / Notas</span>
+                            <div class="sub-val-text" id="sub-symptoms">-</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -1295,6 +1534,9 @@
             // 1.5 Actualizar el Badge de Estado Clínico
             updateStatusBadge(session);
 
+            // 1.8 Poblar datos subjetivos y readiness matutino
+            populateSubjectiveData(session);
+
             // 2. Poblar la tabla cuantitativa
             populateQuantitativeTable(session);
 
@@ -1460,6 +1702,104 @@
             }
         }
 
+        // Datos Subjetivos y Readiness Dinámicos
+        function populateSubjectiveData(session) {
+            const sub = session.subjective || { completed: false };
+            const badge = document.getElementById('subjective-status-badge');
+            const readinessVal = document.getElementById('sub-readiness-val');
+            const readinessPill = document.getElementById('sub-readiness-pill');
+            const sleepHoursEl = document.getElementById('sub-sleep-hours');
+            const sleepQualityEl = document.getElementById('sub-sleep-quality');
+            const moodEl = document.getElementById('sub-mood');
+            const painEl = document.getElementById('sub-pain');
+            const prevExerciseEl = document.getElementById('sub-prev-exercise');
+            const habitsEl = document.getElementById('sub-habits');
+            const symptomsEl = document.getElementById('sub-symptoms');
+
+            if (!badge || !readinessVal) return;
+
+            if (sub.completed === true) {
+                badge.textContent = "✓ Reporte Subjetivo Completado";
+                badge.style.color = "#10b981";
+                badge.style.borderColor = "#10b981";
+                badge.style.backgroundColor = "rgba(16, 185, 129, 0.12)";
+            } else {
+                badge.textContent = "⏳ Pendiente de Reporte";
+                badge.style.color = "#f59e0b";
+                badge.style.borderColor = "#f59e0b";
+                badge.style.backgroundColor = "rgba(245, 158, 11, 0.12)";
+            }
+
+            // Readiness
+            if (sub.readiness !== null && sub.readiness !== undefined) {
+                readinessVal.textContent = sub.readiness;
+                if (sub.readiness >= 8) {
+                    readinessVal.style.color = "#10b981";
+                    readinessPill.textContent = "Alta Disposición";
+                    readinessPill.style.color = "#10b981";
+                    readinessPill.style.borderColor = "#10b981";
+                    readinessPill.style.backgroundColor = "rgba(16, 185, 129, 0.15)";
+                } else if (sub.readiness >= 5) {
+                    readinessVal.style.color = "#f59e0b";
+                    readinessPill.textContent = "Disposición Moderada";
+                    readinessPill.style.color = "#f59e0b";
+                    readinessPill.style.borderColor = "#f59e0b";
+                    readinessPill.style.backgroundColor = "rgba(245, 158, 11, 0.15)";
+                } else {
+                    readinessVal.style.color = "#f43f5e";
+                    readinessPill.textContent = "Baja Disposición / Fatiga";
+                    readinessPill.style.color = "#f43f5e";
+                    readinessPill.style.borderColor = "#f43f5e";
+                    readinessPill.style.backgroundColor = "rgba(244, 63, 94, 0.15)";
+                }
+            } else {
+                readinessVal.textContent = "--";
+                readinessVal.style.color = "var(--text-muted)";
+                readinessPill.textContent = "Sin datos";
+                readinessPill.style.color = "var(--text-muted)";
+                readinessPill.style.borderColor = "var(--accent-border)";
+                readinessPill.style.backgroundColor = "rgba(148, 163, 184, 0.1)";
+            }
+
+            // Horas de Sueño
+            if (sub.sleep_hours !== null && sub.sleep_hours !== undefined) {
+                sleepHoursEl.innerHTML = `${sub.sleep_hours} <small style="font-size: 0.8rem;">hrs</small>`;
+            } else {
+                sleepHoursEl.innerHTML = `- <small style="font-size: 0.8rem;">hrs</small>`;
+            }
+
+            // Estrellas para escalas 1-5
+            const formatScale5 = (val) => {
+                if (val === null || val === undefined) return "-";
+                const num = Math.min(5, Math.max(1, Math.round(val)));
+                const stars = '★'.repeat(num) + '☆'.repeat(5 - num);
+                return `${val}/5 <span style="color: #f59e0b; font-size: 0.85rem;">${stars}</span>`;
+            };
+
+            sleepQualityEl.innerHTML = formatScale5(sub.sleep_quality);
+            moodEl.innerHTML = formatScale5(sub.mood);
+
+            // Dolor
+            if (sub.pain_scale !== null && sub.pain_scale !== undefined) {
+                const detail = sub.pain_detail && sub.pain_detail.toLowerCase() !== "ninguno" && sub.pain_detail.toLowerCase() !== "no" ? ` (${sub.pain_detail})` : '';
+                const color = sub.pain_scale === 0 ? "var(--accent-pns)" : (sub.pain_scale <= 3 ? "var(--accent-lf)" : "var(--accent-sns)");
+                painEl.innerHTML = `<span style="color: ${color}; font-weight: 700;">${sub.pain_scale}/10</span>${detail}`;
+            } else {
+                painEl.textContent = "-";
+            }
+
+            // Ejercicio Previo
+            prevExerciseEl.textContent = sub.previous_exercise || "No registrado";
+
+            // Hábitos
+            const caf = sub.caffeine || "No registrada";
+            const alc = sub.alcohol || "No registrado";
+            habitsEl.innerHTML = `☕ <strong>Café:</strong> ${caf} &nbsp;|&nbsp; 🍷 <strong>Alcohol:</strong> ${alc}`;
+
+            // Síntomas
+            symptomsEl.textContent = sub.symptoms || "Ninguno reportado";
+        }
+
         // Tab Switching
         function switchTab(tabId) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -1592,6 +1932,14 @@
                 let s = sessions[i];
                 let b = baseline[i];
                 let info = `&lt;b&gt;Sesión ${s.session} (${s.date})&lt;/b&gt;&lt;br&gt;${currentMetric.toUpperCase()}: ${d} ${unit}`;
+                if (s.subjective && s.subjective.completed) {
+                    if (s.subjective.readiness !== null && s.subjective.readiness !== undefined) {
+                        info += `&lt;br&gt;&lt;span style='color:#38bdf8;'&gt;⚡ Readiness: ${s.subjective.readiness}/10&lt;/span&gt;`;
+                    }
+                    if (s.subjective.sleep_hours !== null && s.subjective.sleep_hours !== undefined) {
+                        info += `&lt;br&gt;&lt;span style='color:#94a3b8;'&gt;💤 Sueño: ${s.subjective.sleep_hours}h&lt;/span&gt;`;
+                    }
+                }
                 if (b && b.valid && sessions.length >= 7) {
                     info += `&lt;br&gt;&lt;span style='color:#10b981;'&gt;Media 7d: ${b.mean} ${unit}&lt;/span&gt;&lt;br&gt;&lt;span style='color:#38bdf8;'&gt;Rango: ${b.lower} - ${b.upper}&lt;/span&gt;`;
                 } else {
