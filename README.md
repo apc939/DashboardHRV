@@ -27,9 +27,9 @@ El sistema genera un **Dashboard HTML interactivo** que funciona completamente f
 DashboardHRV/
 ├── Pacientes/
 │   └── <NombrePaciente>_HRV/
-│       ├── DDMMYYYY.csv             # Reporte CSV exportado desde Kubios HRV
-│       ├── DDMMYYYY.pdf             # Reporte PDF original (opcional)
-│       ├── DDMMYYYY_conclusiones.txt# Archivo editable de conclusiones y auditoría
+│       ├── reportes_kubios/         # Insumos originales (DDMMYYYY.csv y PDFs de Kubios)
+│       ├── notas_clinicas/          # Notas editables (_conclusiones.txt y _subjetivo.txt)
+│       ├── forms_url.txt            # URL vinculada de Google Sheets para sincronización directa
 │       ├── data.json                # Historial acumulado del paciente en JSON
 │       └── data.js                  # Historial en JavaScript (bypass de CORS)
 ├── data_dinamica/                   # Subcarpeta de datos temporales del paciente activo
@@ -37,9 +37,14 @@ DashboardHRV/
 │   ├── data.js                      # Copia activa temporal en JS (leída por dashboard.html)
 │   └── activo.txt                   # Muestra el nombre del paciente activo actual
 ├── plantillas/                      # Plantillas y guías de redacción clínica
-│   └── plantilla_conclusiones.md    # Guía narrativa y fórmulas de referencia
+│   ├── plantilla_conclusiones.md    # Guía narrativa y fórmulas de referencia
+│   ├── plantilla_subjetivos.md      # Guía de variables subjetivas
+│   └── plantilla_formulario_google.md# Código Apps Script para crear el formulario en 1 clic
 ├── scripts/
-│   └── parse_hrv.py                 # Parser inteligente en Python
+│   ├── parse_hrv.py                 # Parser inteligente en Python
+│   └── import_google_forms.py       # Importador por lotes desde Google Forms / Sheets
+├── tests/                           # Suite de pruebas automatizadas
+│   └── test_subjective_integration.py# Tests unitarios e integración
 ├── dashboard.html                   # Interfaz clínica del Dashboard
 ├── README.md                        # Documentación para usuarios y médicos
 ├── .GEMINI.md                       # Documentación técnica para modelos de IA (oculto)
@@ -119,6 +124,51 @@ Para asegurar el rigor clínico, la herramienta **nunca publica conclusiones sin
      python3 scripts/parse_hrv.py Pacientes/<Carpeta>/
      ```
    * El script detectará la ausencia del archivo y generará una copia nueva e intacta con todos los valores calculados de la sesión.
+
+---
+
+## 📋 Captura de Datos Subjetivos y Readiness Matutino (`_subjetivo.txt`)
+
+El sistema permite correlacionar las métricas autonómicas objetivas con la percepción y hábitos del paciente:
+
+1. **Plantilla Automática (`DDMMYYYY_subjetivo.txt`)**:
+   Al procesar un CSV de sesión, se genera automáticamente una plantilla con las 9 variables clínicas:
+   ```text
+   COMPLETADO: SI
+   ======================================================================
+   📋 DATOS SUBJETIVOS Y ESTADO MATUTINO (31/08/2026)
+   ======================================================================
+   • Horas de sueno: 7.5
+   • Calidad del sueno (1-5): 4
+   • Estado de animo (1-5): 4
+   • Nivel de dolor (0-10): 0
+   • Detalle de dolor: Ninguno
+   • Percepcion de readiness (1-10): 8
+   • Ejercicio previo: Fuerza tren superior 45 min RPE 7
+   • Cafeina dia previo: 1 taza por la mañana
+   • Alcohol dia previo: No
+   • Sintomas o sensaciones: Ninguno
+   ======================================================================
+   ```
+
+2. **Creación Rápida del Formulario (Google Apps Script)**:
+   Puedes generar el formulario y su Google Sheet vinculado en 30 segundos ejecutando el código provisto en [`plantillas/plantilla_formulario_google.md`](file:///Users/apc939/Desktop/DashboardHRV/plantillas/plantilla_formulario_google.md) desde [script.google.com](https://script.google.com).
+
+3. **Sincronización Automática Directa desde Google Sheets (Recomendado)**:
+   * **Paso 1: Guardar la URL del paciente (solo 1 vez)**:
+     ```bash
+     python3 scripts/import_google_forms.py --set-url "https://docs.google.com/spreadsheets/d/TU_ID/edit" Pacientes/<CarpetaPaciente>/
+     ```
+   * **Paso 2: Sincronizar en cualquier momento**:
+     ```bash
+     python3 scripts/import_google_forms.py --sync Pacientes/<CarpetaPaciente>/
+     ```
+     *El script descarga automáticamente las respuestas de Google Sheets, genera/actualiza los archivos `DDMMYYYY_subjetivo.txt` y refresca el Dashboard al instante.*
+
+4. **Importación de archivo CSV local (Alternativa sin conexión)**:
+   ```bash
+   python3 scripts/import_google_forms.py respuestas_forms.csv Pacientes/<CarpetaPaciente>/
+   ```
 
 ---
 

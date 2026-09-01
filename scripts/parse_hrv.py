@@ -5,6 +5,72 @@ import json
 import re
 from datetime import datetime
 
+def get_patient_root_dir(path):
+    abs_path = os.path.abspath(path)
+    cur = os.path.dirname(abs_path) if os.path.isfile(abs_path) else abs_path
+    
+    # Si cur es una subcarpeta interna de paciente (reportes_kubios, notas_clinicas, config)
+    if os.path.basename(cur) in ["reportes_kubios", "notas_clinicas", "config"]:
+        return os.path.dirname(cur)
+        
+    # Si el nombre de la carpeta termina en _HRV
+    if os.path.basename(cur).endswith("_HRV"):
+        return cur
+        
+    # Subir recursivamente buscando el directorio del paciente
+    check = cur
+    while check and check != os.path.dirname(check):
+        if os.path.basename(check).endswith("_HRV"):
+            return check
+        if os.path.basename(os.path.dirname(check)) == "Pacientes":
+            return check
+        if os.path.exists(os.path.join(check, "reportes_kubios")) or os.path.exists(os.path.join(check, "notas_clinicas")) or os.path.exists(os.path.join(check, "data.json")):
+            return check
+        check = os.path.dirname(check)
+        
+    return cur
+
+def get_clinical_file_paths(patient_root, date_str):
+    notas_dir = os.path.join(patient_root, "notas_clinicas")
+    
+    # Conclusiones
+    c_sub = os.path.join(notas_dir, f"{date_str}_conclusiones.txt")
+    c_root = os.path.join(patient_root, f"{date_str}_conclusiones.txt")
+    if os.path.exists(c_sub):
+        concl_path = c_sub
+    elif os.path.exists(c_root):
+        concl_path = c_root
+    else:
+        concl_path = c_sub
+
+    # Subjetivo
+    s_sub = os.path.join(notas_dir, f"{date_str}_subjetivo.txt")
+    s_root = os.path.join(patient_root, f"{date_str}_subjetivo.txt")
+    if os.path.exists(s_sub):
+        subj_path = s_sub
+    elif os.path.exists(s_root):
+        subj_path = s_root
+    else:
+        subj_path = s_sub
+        
+    return concl_path, subj_path
+
+def find_patient_csv_files(patient_root):
+    csv_files = []
+    # 1. Buscar en reportes_kubios/
+    kubios_dir = os.path.join(patient_root, "reportes_kubios")
+    if os.path.isdir(kubios_dir):
+        for f in sorted(os.listdir(kubios_dir)):
+            if f.endswith(".csv") and re.match(r"^\d{8}\.csv$", f):
+                csv_files.append(os.path.join(kubios_dir, f))
+    # 2. Buscar en la raíz de patient_root
+    for f in sorted(os.listdir(patient_root)):
+        if f.endswith(".csv") and re.match(r"^\d{8}\.csv$", f):
+            full_p = os.path.join(patient_root, f)
+            if full_p not in csv_files:
+                csv_files.append(full_p)
+    return sorted(csv_files)
+
 def parse_csv_file(filepath):
     filename = os.path.basename(filepath)
     # Validar formato de nombre DDMMYYYY.csv
@@ -16,8 +82,8 @@ def parse_csv_file(filepath):
     session_date = f"{day}/{month}"
     full_date = f"{day}/{month}/{year}"
     
-    # Determinar el nombre del paciente a partir de la carpeta contenedora
-    parent_path = os.path.dirname(os.path.abspath(filepath))
+    # Determinar el nombre del paciente a partir de la carpeta contenedora raíz
+    parent_path = get_patient_root_dir(filepath)
     parent_dir = os.path.basename(parent_path)
     patient_name = parent_dir.replace("_HRV", "")
     # Añadir espacios antes de las mayúsculas (CamelCase a espacios)
@@ -165,6 +231,98 @@ def read_conclusions_from_file(filepath):
         print(f"Error al leer el archivo de conclusiones {filepath}: {e}")
         return False, default_conclusions
 
+def read_subjective_from_file(filepath):
+    default_subjective = {
+        "completed": False,
+        "sleep_hours": None,
+        "sleep_quality": None,
+        "mood": None,
+        "pain_scale": None,
+        "pain_detail": None,
+        "readiness": None,
+        "previous_exercise": None,
+        "caffeine": None,
+        "alcohol": None,
+        "symptoms": None
+    }
+    if not os.path.exists(filepath):
+        return default_subjective
+        
+    try:
+        with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
+            content = f.read()
+            
+        completed_match = re.search(r"COMPLETADO:\s*(SI|SÍ|YES|TRUE|OK|APROBADO)", content, re.IGNORECASE)
+        is_completed = bool(completed_match)
+        
+        def extract_num(pattern, text):
+            m = re.search(pattern, text, re.IGNORECASE)
+            if m and m.group(1).strip():
+                try:
+                    val = float(m.group(1).strip())
+                    return int(val) if val.is_integer() else val
+                except ValueError:
+                    return None
+            return None
+
+        def extract_str(pattern, text):
+            m = re.search(pattern, text, re.IGNORECASE)
+            if m:
+                val = m.group(1).strip()
+                return val if val else None
+            return None
+
+        sleep_hours = extract_num(r"•?\s*Horas de sue[ñn]o:\s*([0-9]+(?:\.[0-9]+)?)", content)
+        sleep_quality = extract_num(r"•?\s*Calidad del sue[ñn]o(?:\s*\(1-5\))?:\s*([0-9]+(?:\.[0-9]+)?)", content)
+        mood = extract_num(r"•?\s*Estado de [áa]nimo(?:\s*\(1-5\))?:\s*([0-9]+(?:\.[0-9]+)?)", content)
+        pain_scale = extract_num(r"•?\s*(?:Nivel de )?dolor(?:\s*\(0-10\))?:\s*([0-9]+(?:\.[0-9]+)?)", content)
+        pain_detail = extract_str(r"•?\s*Detalle de dolor:\s*(.*?)(?=\n\s*•|\n\s*===|\n\s*---|\Z)", content)
+        readiness = extract_num(r"•?\s*(?:Percepci[óo]n de )?readiness(?:\s*\(1-10\))?:\s*([0-9]+(?:\.[0-9]+)?)", content)
+        previous_exercise = extract_str(r"•?\s*Ejercicio previo:\s*(.*?)(?=\n\s*•|\n\s*===|\n\s*---|\Z)", content)
+        caffeine = extract_str(r"•?\s*Cafe[íi]na(?: d[íi]a previo)?:\s*(.*?)(?=\n\s*•|\n\s*===|\n\s*---|\Z)", content)
+        alcohol = extract_str(r"•?\s*Alcohol(?: d[íi]a previo)?:\s*(.*?)(?=\n\s*•|\n\s*===|\n\s*---|\Z)", content)
+        symptoms = extract_str(r"•?\s*(?:S[íi]ntomas|Otros s[íi]ntomas|Notas)(?: o sensaciones)?:\s*(.*?)(?=\n\s*•|\n\s*===|\n\s*---|\Z)", content)
+        
+        return {
+            "completed": is_completed,
+            "sleep_hours": sleep_hours,
+            "sleep_quality": sleep_quality,
+            "mood": mood,
+            "pain_scale": pain_scale,
+            "pain_detail": pain_detail,
+            "readiness": readiness,
+            "previous_exercise": previous_exercise,
+            "caffeine": caffeine,
+            "alcohol": alcohol,
+            "symptoms": symptoms
+        }
+    except Exception as e:
+        print(f"Error al leer el archivo subjetivo {filepath}: {e}")
+        return default_subjective
+
+def clean_orphan_clinical_files(patient_root, valid_csv_stems):
+    dirs_to_check = [patient_root, os.path.join(patient_root, "notas_clinicas")]
+    for d in dirs_to_check:
+        if not os.path.isdir(d):
+            continue
+        for f in os.listdir(d):
+            if f.endswith("_conclusiones.txt"):
+                stem = f.replace("_conclusiones.txt", "")
+                if stem not in valid_csv_stems and re.match(r"^\d{8}$", stem):
+                    try:
+                        os.remove(os.path.join(d, f))
+                        print(f"Eliminado archivo de conclusiones huérfano: {f}")
+                    except Exception:
+                        pass
+            elif f.endswith("_subjetivo.txt"):
+                stem = f.replace("_subjetivo.txt", "")
+                if stem not in valid_csv_stems and re.match(r"^\d{8}$", stem):
+                    try:
+                        os.remove(os.path.join(d, f))
+                        print(f"Eliminado archivo subjetivo huérfano: {f}")
+                    except Exception:
+                        pass
+
 def save_patient_data(patient_name, parent_path, new_sessions, is_full_scan=False):
     patient_json_path = os.path.join(parent_path, "data.json")
     
@@ -195,15 +353,16 @@ def save_patient_data(patient_name, parent_path, new_sessions, is_full_scan=Fals
     except Exception as e:
         print(f"Advertencia al ordenar las sesiones cronológicamente: {e}")
         
-    # Actualizar numeración consecutiva de las sesiones y procesar conclusiones .txt
+    # Actualizar numeración consecutiva de las sesiones y procesar conclusiones .txt y subjetivo .txt
     for idx, s in enumerate(sorted_sessions):
         s["session"] = idx + 1
+        date_str = s["full_date"].replace("/", "")
+        
+        conclusiones_path, subjetivo_path = get_clinical_file_paths(parent_path, date_str)
+        os.makedirs(os.path.dirname(conclusiones_path), exist_ok=True)
+        os.makedirs(os.path.dirname(subjetivo_path), exist_ok=True)
         
         # Flujo de conclusiones .txt
-        date_str = s["full_date"].replace("/", "")
-        conclusiones_filename = f"{date_str}_conclusiones.txt"
-        conclusiones_path = os.path.join(parent_path, conclusiones_filename)
-        
         sug_pns, sug_sns, sug_rec = calculate_suggested_conclusions(s)
         
         if not os.path.exists(conclusiones_path):
@@ -263,6 +422,35 @@ def save_patient_data(patient_name, parent_path, new_sessions, is_full_scan=Fals
             s["reviewed"] = is_reviewed
             s["conclusions"] = conclusions
             
+        # Flujo de datos subjetivos .txt
+        if not os.path.exists(subjetivo_path):
+            try:
+                subjetivo_content = (
+                    "COMPLETADO: NO\n"
+                    "======================================================================\n"
+                    f"📋 DATOS SUBJETIVOS Y ESTADO MATUTINO ({s['full_date']})\n"
+                    "======================================================================\n"
+                    "• Horas de sueno: \n"
+                    "• Calidad del sueno (1-5): \n"
+                    "• Estado de animo (1-5): \n"
+                    "• Nivel de dolor (0-10): \n"
+                    "• Detalle de dolor: \n"
+                    "• Percepcion de readiness (1-10): \n"
+                    "• Ejercicio previo: \n"
+                    "• Cafeina dia previo: \n"
+                    "• Alcohol dia previo: \n"
+                    "• Sintomas o sensaciones: \n"
+                    "======================================================================\n"
+                )
+                with open(subjetivo_path, "w", encoding="utf-8") as f:
+                    f.write(subjetivo_content)
+                print(f"Creada plantilla de datos subjetivos en: {subjetivo_path} (Estado: COMPLETADO: NO)")
+            except Exception as e:
+                print(f"Error al escribir la plantilla subjetiva: {e}")
+            s["subjective"] = read_subjective_from_file(subjetivo_path)
+        else:
+            s["subjective"] = read_subjective_from_file(subjetivo_path)
+            
     updated_data = {
         "patient_name": patient_name,
         "sessions": sorted_sessions
@@ -279,8 +467,17 @@ def save_patient_data(patient_name, parent_path, new_sessions, is_full_scan=Fals
     print(f"Historial guardado exitosamente en: {parent_path} (JSON y JS, {len(sorted_sessions)} sesiones totales)")
     
     # Guardar copia activa en la subcarpeta data_dinamica/ del proyecto (leída por dashboard.html)
-    root_dir = os.path.dirname(os.path.dirname(parent_path))
-    data_dir = os.path.join(root_dir, "data_dinamica")
+    cur = parent_path
+    project_root = None
+    while cur and cur != os.path.dirname(cur):
+        if os.path.exists(os.path.join(cur, "dashboard.html")) or os.path.exists(os.path.join(cur, "Pacientes")):
+            project_root = cur
+            break
+        cur = os.path.dirname(cur)
+    if not project_root:
+        project_root = os.path.dirname(os.path.dirname(parent_path))
+        
+    data_dir = os.path.join(project_root, "data_dinamica")
     os.makedirs(data_dir, exist_ok=True)
     
     root_json_path = os.path.join(data_dir, "data.json")
@@ -304,53 +501,102 @@ def save_patient_data(patient_name, parent_path, new_sessions, is_full_scan=Fals
 def main():
     if len(sys.argv) < 2:
         print("Uso:")
-        print("  Procesar un archivo CSV o TXT: python parse_hrv.py Pacientes/<CarpetaPaciente>/DDMMYYYY.csv (o _conclusiones.txt)")
-        print("  Procesar todos los archivos de un paciente: python parse_hrv.py Pacientes/<CarpetaPaciente>/")
+        print("  1. Sincronización Total (Kubios + Conclusiones + Google Forms):")
+        print("     python3 scripts/parse_hrv.py --sync Pacientes/<CarpetaPaciente>/")
+        print("  2. Procesar todos los archivos locales de un paciente:")
+        print("     python3 scripts/parse_hrv.py Pacientes/<CarpetaPaciente>/")
+        print("  3. Procesar un archivo individual (CSV, conclusiones o subjetivo):")
+        print("     python3 scripts/parse_hrv.py Pacientes/<CarpetaPaciente>/DDMMYYYY.csv")
+        print("  4. Configurar URL de Google Sheets:")
+        print("     python3 scripts/parse_hrv.py --set-url '<URL>' Pacientes/<CarpetaPaciente>/")
         sys.exit(1)
         
-    path_arg = sys.argv[1]
+    arg1 = sys.argv[1]
+    
+    # Manejo de --set-url
+    if arg1 == "--set-url":
+        if len(sys.argv) < 4:
+            print("Uso: python3 scripts/parse_hrv.py --set-url '<URL_GOOGLE_SHEETS>' Pacientes/<CarpetaPaciente>/")
+            sys.exit(1)
+        from import_google_forms import main as forms_main
+        forms_main()
+        return
+
+    # Manejo de --sync
+    if arg1 == "--sync":
+        if len(sys.argv) < 3:
+            print("Uso: python3 scripts/parse_hrv.py --sync Pacientes/<CarpetaPaciente>/")
+            sys.exit(1)
+        patient_dir = sys.argv[2]
+        from import_google_forms import import_forms_csv
+        import_forms_csv("--sync", patient_dir)
+        return
+
+    path_arg = arg1
     
     if not os.path.exists(path_arg):
         print(f"Error: La ruta especificada no existe: {path_arg}")
         sys.exit(1)
         
-    # Si el usuario pasó el archivo de conclusiones .txt, derivar su CSV correspondiente
+    # Si el usuario pasó el archivo de conclusiones o subjetivo .txt, derivar su CSV correspondiente
     if path_arg.endswith("_conclusiones.txt"):
-        csv_candidate = path_arg.replace("_conclusiones.txt", ".csv")
-        if not os.path.exists(csv_candidate):
-            print(f"Error: No se encontró el archivo CSV correspondiente ({csv_candidate}) para el archivo de conclusiones.")
+        stem = os.path.basename(path_arg).replace("_conclusiones.txt", "")
+        patient_root = get_patient_root_dir(path_arg)
+        # Buscar CSV en reportes_kubios o en patient_root
+        csv_candidates = [
+            os.path.join(patient_root, "reportes_kubios", f"{stem}.csv"),
+            os.path.join(patient_root, f"{stem}.csv")
+        ]
+        csv_candidate = next((c for c in csv_candidates if os.path.exists(c)), None)
+        if not csv_candidate:
+            print(f"Error: No se encontró el archivo CSV correspondiente para {path_arg}.")
+            sys.exit(1)
+        path_arg = csv_candidate
+    elif path_arg.endswith("_subjetivo.txt"):
+        stem = os.path.basename(path_arg).replace("_subjetivo.txt", "")
+        patient_root = get_patient_root_dir(path_arg)
+        csv_candidates = [
+            os.path.join(patient_root, "reportes_kubios", f"{stem}.csv"),
+            os.path.join(patient_root, f"{stem}.csv")
+        ]
+        csv_candidate = next((c for c in csv_candidates if os.path.exists(c)), None)
+        if not csv_candidate:
+            print(f"Error: No se encontró el archivo CSV correspondiente para {path_arg}.")
             sys.exit(1)
         path_arg = csv_candidate
         
+    # Si el usuario pasó un archivo CSV de Google Forms / Encuesta subjetiva
+    if not os.path.isdir(path_arg) and path_arg.endswith(".csv") and not re.match(r"^\d{8}\.csv$", os.path.basename(path_arg)):
+        try:
+            with open(path_arg, "r", encoding="utf-8-sig", errors="ignore") as f:
+                first_line = f.readline().lower()
+            if any(term in first_line for term in ["timestamp", "marca temporal", "sueño", "sueno", "readiness", "dolor"]):
+                from import_google_forms import import_forms_csv
+                parent_dir = get_patient_root_dir(path_arg)
+                print(f"📋 Detectado archivo de respuestas de encuesta: {os.path.basename(path_arg)}")
+                import_forms_csv(path_arg, parent_dir)
+                return
+        except Exception as e:
+            pass
+
     new_sessions = []
     patient_name = None
     parent_path = None
     
     is_dir = os.path.isdir(path_arg)
     if is_dir:
-        # Es un directorio, procesar todos los archivos CSV válidos dentro
-        csv_files = []
-        for f in os.listdir(path_arg):
-            if f.endswith(".csv") and re.match(r"^\d{8}\.csv$", f):
-                csv_files.append(os.path.join(path_arg, f))
+        patient_root = get_patient_root_dir(path_arg)
+        csv_files = find_patient_csv_files(patient_root)
                 
         if not csv_files:
-            print(f"No se encontraron archivos CSV con formato DDMMYYYY.csv en el directorio: {path_arg}")
+            print(f"No se encontraron archivos CSV con formato DDMMYYYY.csv en: {path_arg}")
             sys.exit(1)
             
-        # Limpiar posibles archivos _conclusiones.txt huérfanos cuyos CSV ya no existan en el directorio
+        # Limpiar posibles archivos _conclusiones.txt y _subjetivo.txt huérfanos cuyos CSV ya no existan
         valid_csv_stems = {os.path.basename(f).replace(".csv", "") for f in csv_files}
-        for f in os.listdir(path_arg):
-            if f.endswith("_conclusiones.txt"):
-                stem = f.replace("_conclusiones.txt", "")
-                if stem not in valid_csv_stems and re.match(r"^\d{8}$", stem):
-                    try:
-                        os.remove(os.path.join(path_arg, f))
-                        print(f"Eliminado archivo de conclusiones huérfano: {f}")
-                    except Exception:
-                        pass
+        clean_orphan_clinical_files(patient_root, valid_csv_stems)
             
-        print(f"Procesando {len(csv_files)} archivos CSV en el directorio {path_arg}...")
+        print(f"Procesando {len(csv_files)} archivos CSV para el paciente...")
         for filepath in csv_files:
             try:
                 p_name, p_path, session = parse_csv_file(filepath)

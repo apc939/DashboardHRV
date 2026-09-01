@@ -1,0 +1,210 @@
+#!/usr/bin/env python3
+import os
+import sys
+import shutil
+import tempfile
+import json
+import unittest
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts"))
+from parse_hrv import read_subjective_from_file, parse_csv_file, save_patient_data
+
+class TestSubjectiveIntegration(unittest.TestCase):
+    def setUp(self):
+        self.test_dir = tempfile.mkdtemp()
+        self.patient_dir = os.path.join(self.test_dir, "JuanPerez_HRV")
+        os.makedirs(self.patient_dir, exist_ok=True)
+        
+        self.sample_csv_path = os.path.join(self.patient_dir, "31082026.csv")
+        sample_csv_content = (
+            "PNS index:,-0.54,,-0.63,,1.23,,-0.56,,-2.16,,-0.02,\n"
+            "SNS index:,-0.54,,-0.63,,-0.65,,-0.10,,3.13,,-0.21,\n"
+            "Mean HR (beats/min):,60.4,,61.0,,61.7,,67.0,,91.8,,65.4,\n"
+            "RMSSD (ms):,39.1,,75.2,,94.6,,30.2,,13.8,,42.3,\n"
+            "LF/HF ratio:,20.98,,0.08,,0.10,,14.88,,19.33,,1.86,\n"
+            "SD1 (ms):,27.7,,53.7,,67.4,,21.4,,9.8,,30.0,\n"
+            "SD2 (ms):,78.5,,83.2,,87.1,,70.8,,43.2,,61.1,\n"
+            "VLF (%):,0.6,,1.0,,1.4,,6.0,,35.2,,3.3,\n"
+            "LF (%):,94.9,,7.0,,9.1,,88.1,,61.6,,62.9,\n"
+            "HF (%):,4.5,,92.0,,89.6,,5.9,,3.2,,33.8,\n"
+            "SDNN (ms):,58.8,,70.1,,77.3,,52.4,,31.2,,48.1,\n"
+            "Stress index:,7.47,,7.69,,7.63,,7.40,,17.52,,8.13,\n"
+        )
+        with open(self.sample_csv_path, "w", encoding="utf-8") as f:
+            f.write(sample_csv_content)
+
+    def tearDown(self):
+        shutil.rmtree(self.test_dir)
+
+    def test_auto_generate_template_when_missing(self):
+        p_name, p_path, session = parse_csv_file(self.sample_csv_path)
+        save_patient_data(p_name, p_path, [session], is_full_scan=True)
+        
+        subjetivo_file = os.path.join(self.patient_dir, "notas_clinicas", "31082026_subjetivo.txt")
+        self.assertTrue(os.path.exists(subjetivo_file), "Debe autogenerarse el archivo DDMMYYYY_subjetivo.txt en notas_clinicas/")
+        
+        with open(subjetivo_file, "r", encoding="utf-8") as f:
+            content = f.read()
+        self.assertIn("COMPLETADO: NO", content)
+        self.assertIn("Horas de sueno:", content)
+        self.assertIn("Percepcion de readiness (1-10):", content)
+        
+        json_path = os.path.join(self.patient_dir, "data.json")
+        with open(json_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        self.assertEqual(len(data["sessions"]), 1)
+        sub = data["sessions"][0]["subjective"]
+        self.assertFalse(sub["completed"])
+        self.assertIsNone(sub["sleep_hours"])
+        self.assertIsNone(sub["readiness"])
+
+    def test_parse_completed_subjective_file(self):
+        notas_dir = os.path.join(self.patient_dir, "notas_clinicas")
+        os.makedirs(notas_dir, exist_ok=True)
+        subjetivo_file = os.path.join(notas_dir, "31082026_subjetivo.txt")
+        custom_content = (
+            "COMPLETADO: SI\n"
+            "======================================================================\n"
+            "📋 DATOS SUBJETIVOS Y ESTADO MATUTINO (31/08/2026)\n"
+            "======================================================================\n"
+            "• Horas de sueño: 7.5\n"
+            "• Calidad del sueño (1-5): 4\n"
+            "• Estado de ánimo (1-5): 5\n"
+            "• Nivel de dolor (0-10): 2\n"
+            "• Detalle de dolor: Molestia leve en rodilla izquierda\n"
+            "• Percepción de readiness (1-10): 8\n"
+            "• Ejercicio previo: Fuerza tren inferior 50 min RPE 8\n"
+            "• Cafeína día previo: 2 espressos por la mañana\n"
+            "• Alcohol día previo: No\n"
+            "• Síntomas o sensaciones: Ninguno relevante\n"
+            "======================================================================\n"
+        )
+        with open(subjetivo_file, "w", encoding="utf-8") as f:
+            f.write(custom_content)
+            
+        p_name, p_path, session = parse_csv_file(self.sample_csv_path)
+        save_patient_data(p_name, p_path, [session], is_full_scan=True)
+        
+        json_path = os.path.join(self.patient_dir, "data.json")
+        with open(json_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        sub = data["sessions"][0]["subjective"]
+        
+        self.assertTrue(sub["completed"])
+        self.assertEqual(sub["sleep_hours"], 7.5)
+        self.assertEqual(sub["sleep_quality"], 4)
+        self.assertEqual(sub["mood"], 5)
+        self.assertEqual(sub["pain_scale"], 2)
+        self.assertEqual(sub["pain_detail"], "Molestia leve en rodilla izquierda")
+        self.assertEqual(sub["readiness"], 8)
+        self.assertEqual(sub["previous_exercise"], "Fuerza tren inferior 50 min RPE 8")
+        self.assertEqual(sub["caffeine"], "2 espressos por la mañana")
+        self.assertEqual(sub["alcohol"], "No")
+        self.assertEqual(sub["symptoms"], "Ninguno relevante")
+
+    def test_direct_subjective_argument_in_cli(self):
+        notas_dir = os.path.join(self.patient_dir, "notas_clinicas")
+        os.makedirs(notas_dir, exist_ok=True)
+        subjetivo_file = os.path.join(notas_dir, "31082026_subjetivo.txt")
+        with open(subjetivo_file, "w", encoding="utf-8") as f:
+            f.write("COMPLETADO: SI\n• Horas de sueño: 8\n• Percepción de readiness (1-10): 9\n")
+            
+        ret = os.system(f"python3 scripts/parse_hrv.py {subjetivo_file} > /dev/null 2>&1")
+        self.assertEqual(ret, 0, "El script debe procesar el archivo _subjetivo.txt derivando su CSV")
+
+    def test_google_forms_importer(self):
+        csv_forms_path = os.path.join(self.test_dir, "forms_responses.csv")
+        with open(csv_forms_path, "w", encoding="utf-8") as f:
+            f.write(
+                "Marca temporal,Fecha de toma,Horas de sueño,Calidad descanso (1-5),Estado de ánimo (1-5),Nivel de dolor (0-10),Detalle dolor,Readiness (1-10),Ejercicio previo,Consumo cafeína,Consumo alcohol,Notas o síntomas\n"
+                "01/09/2026 08:30:00,31/08/2026,7.2,4,4,0,Ninguno,8,Fuerza torso 45min,1 taza matutina,No,Sensación de buen descanso\n"
+            )
+        ret = os.system(f"python3 scripts/import_google_forms.py {csv_forms_path} {self.patient_dir} > /dev/null 2>&1")
+        self.assertEqual(ret, 0)
+        
+        subjetivo_file = os.path.join(self.patient_dir, "notas_clinicas", "31082026_subjetivo.txt")
+        self.assertTrue(os.path.exists(subjetivo_file))
+        
+        json_path = os.path.join(self.patient_dir, "data.json")
+        with open(json_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        sub = data["sessions"][0]["subjective"]
+        self.assertTrue(sub["completed"])
+        self.assertEqual(sub["sleep_hours"], 7.2)
+        self.assertEqual(sub["sleep_quality"], 4)
+        self.assertEqual(sub["readiness"], 8)
+
+    def test_google_forms_importer_us_date_format(self):
+        csv_forms_path = os.path.join(self.test_dir, "forms_responses_us.csv")
+        with open(csv_forms_path, "w", encoding="utf-8") as f:
+            f.write(
+                "Timestamp,Fecha de la toma de HRV,Horas de sueño,Calidad del sueño (Sensación de descanso),Estado de ánimo y energía,Nivel de dolor corporal,Detalle o zona del dolor,Readiness / Disposición para entrenar hoy,Ejercicio realizado día previo,Consumo de cafeína día previo,Consumo de alcohol día previo,Otros síntomas o sensaciones\n"
+                "9/1/2026 13:10:01,8/31/2026,7,3,4,0,Ninguno,9,Descanso,1 taza matutina,No,Ninguno\n"
+            )
+        ret = os.system(f"python3 scripts/import_google_forms.py {csv_forms_path} {self.patient_dir} > /dev/null 2>&1")
+        self.assertEqual(ret, 0)
+        
+        subjetivo_file = os.path.join(self.patient_dir, "notas_clinicas", "31082026_subjetivo.txt")
+        self.assertTrue(os.path.exists(subjetivo_file))
+        
+        json_path = os.path.join(self.patient_dir, "data.json")
+        with open(json_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        sub = data["sessions"][0]["subjective"]
+        self.assertTrue(sub["completed"])
+        self.assertEqual(sub["sleep_hours"], 7.0)
+        self.assertEqual(sub["sleep_quality"], 3)
+        self.assertEqual(sub["readiness"], 9)
+        self.assertEqual(sub["previous_exercise"], "Descanso")
+
+    def test_set_url_configuration(self):
+        fake_url = "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit"
+        ret = os.system(f"python3 scripts/import_google_forms.py --set-url '{fake_url}' {self.patient_dir} > /dev/null 2>&1")
+        self.assertEqual(ret, 0)
+        
+        url_file = os.path.join(self.patient_dir, "forms_url.txt")
+        self.assertTrue(os.path.exists(url_file))
+        with open(url_file, "r", encoding="utf-8") as f:
+            saved_url = f.read().strip()
+        self.assertEqual(saved_url, fake_url)
+
+    def test_subfolder_organization_and_parsing(self):
+        # Crear subcarpetas funcionales
+        kubios_dir = os.path.join(self.patient_dir, "reportes_kubios")
+        notas_dir = os.path.join(self.patient_dir, "notas_clinicas")
+        os.makedirs(kubios_dir, exist_ok=True)
+        os.makedirs(notas_dir, exist_ok=True)
+        
+        # Mover CSV a reportes_kubios/
+        csv_in_sub = os.path.join(kubios_dir, "31082026.csv")
+        shutil.move(self.sample_csv_path, csv_in_sub)
+        
+        # Crear notas en notas_clinicas/
+        concl_file = os.path.join(notas_dir, "31082026_conclusiones.txt")
+        with open(concl_file, "w", encoding="utf-8") as f:
+            f.write("REVISADO: SI\nReserva Vagal: Excelente\nTolerancia: Normal\nRecuperacion: Optima\n")
+            
+        subj_file = os.path.join(notas_dir, "31082026_subjetivo.txt")
+        with open(subj_file, "w", encoding="utf-8") as f:
+            f.write("COMPLETADO: SI\n• Horas de sueño: 8.5\n• Percepción de readiness (1-10): 10\n")
+            
+        # 1. Proceso de carpeta completa del paciente
+        ret = os.system(f"python3 scripts/parse_hrv.py {self.patient_dir} > /dev/null 2>&1")
+        self.assertEqual(ret, 0)
+        
+        json_path = os.path.join(self.patient_dir, "data.json")
+        self.assertTrue(os.path.exists(json_path))
+        with open(json_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        self.assertEqual(data["patient_name"], "Juan Perez")
+        self.assertEqual(len(data["sessions"]), 1)
+        self.assertTrue(data["sessions"][0]["reviewed"])
+        self.assertEqual(data["sessions"][0]["subjective"]["sleep_hours"], 8.5)
+        self.assertEqual(data["sessions"][0]["subjective"]["readiness"], 10)
+        
+        # 2. Proceso pasando directamente el archivo de notas
+        ret_concl = os.system(f"python3 scripts/parse_hrv.py {concl_file} > /dev/null 2>&1")
+        self.assertEqual(ret_concl, 0)
+
+if __name__ == "__main__":
+    unittest.main()

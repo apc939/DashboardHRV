@@ -1,22 +1,34 @@
 ---
 name: parse-hrv
 description: >-
-  Use this skill to parse one or more Kubios HRV CSV reports (using the format DDMMYYYY.csv)
-  for a patient and update their historical data and the active dashboard.
+  Use this skill to parse Kubios HRV CSV reports (DDMMYYYY.csv), audit clinical conclusions (_conclusiones.txt),
+  and synchronize morning subjective/readiness questionnaires from Google Forms/Sheets (--sync, --set-url, or local CSV)
+  to update patient historical data and the active dashboard.
 ---
 
-# Parse HRV CSV reports
+# Parse HRV & Synchronize Patient Data
 
-This skill runs a Python script to parse HRV CSV files from Kubios HRV and compile them into a unified JSON/JS format for the clinical dashboard.
+This skill runs Python scripts to parse HRV CSV files from Kubios HRV, process clinical audit conclusions, and synchronize subjective morning readiness reports from Google Forms/Sheets into unified JSON/JS for the clinical dashboard.
 
-## Steps
+## Workflows
 
-1. Run the parser script on a single CSV file or a folder of CSV files:
-   * To process a single session:
-     `python3 scripts/parse_hrv.py <path_to_csv>`
-     *(e.g., `python3 scripts/parse_hrv.py Pacientes/AndresParraCharris_HRV/31082026.csv`)*
-   * To process all sessions in a patient folder:
-     `python3 scripts/parse_hrv.py <path_to_patient_folder>`
-     *(e.g., `python3 scripts/parse_hrv.py Pacientes/AndresParraCharris_HRV/`)*
+### 1. Process Kubios HRV Reports & Conclusiones
+* **All sessions in patient folder**:
+  `python3 scripts/parse_hrv.py Pacientes/<CarpetaPaciente>/`
+* **Single session CSV**:
+  `python3 scripts/parse_hrv.py Pacientes/<CarpetaPaciente>/DDMMYYYY.csv`
+* **Single session conclusion file**:
+  `python3 scripts/parse_hrv.py Pacientes/<CarpetaPaciente>/DDMMYYYY_conclusiones.txt`
+* **Single session subjective file**:
+  `python3 scripts/parse_hrv.py Pacientes/<CarpetaPaciente>/DDMMYYYY_subjetivo.txt`
 
-2. Verify that the file `data.json` and `data.js` are updated inside the patient folder (e.g. `Pacientes/<Paciente>_HRV/data.json`) and a copy is placed in the root directory.
+### 2. Synchronize Google Forms / Sheets (Subjective & Readiness)
+* **One-time Setup - Save Google Sheets URL for a patient**:
+  `python3 scripts/import_google_forms.py --set-url "<GOOGLE_SHEETS_URL>" Pacientes/<CarpetaPaciente>/`
+* **Automated Sync from Google Sheets (Daily routine)**:
+  `python3 scripts/import_google_forms.py --sync Pacientes/<CarpetaPaciente>/`
+* **Manual Local CSV Import**:
+  `python3 scripts/import_google_forms.py <path_to_forms_csv> Pacientes/<CarpetaPaciente>/`
+
+## Verification
+Verify that `data.json` and `data.js` inside `Pacientes/<CarpetaPaciente>/` and in `data_dinamica/` are updated.
