@@ -21,6 +21,7 @@
             --accent-sd1: #06b6d4;
             --accent-sd2: #ec4899;
             --accent-border: #26354a;
+            --accent-tp: #22d3ee;
             --grid-line: #1e2c42;
         }
 
@@ -966,6 +967,8 @@
                 display: block !important;
                 margin-top: 8px !important;
                 clear: both !important;
+                break-after: page !important;
+                page-break-after: always !important; /* FIN DE PÁGINA 4 */
             }
 
             .charts-grid-3 {
@@ -1016,6 +1019,39 @@
                 margin-top: 8px !important;
                 break-inside: avoid !important;
                 page-break-inside: avoid !important;
+            }
+
+            /* Spectral Balance Full-Width Card (Page 2 start) */
+            #spectral-balance-card {
+                margin-top: 4px !important;
+                background: #ffffff !important;
+                border: 1px solid #cbd5e1 !important;
+                box-shadow: none !important;
+                padding: 3px 6px !important;
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+            }
+
+            #spectral-balance-card .svg-container {
+                height: 115px !important;
+                max-height: 115px !important;
+            }
+
+            #spectral-balance-card svg {
+                max-height: 115px !important;
+                height: 115px !important;
+            }
+
+            /* Bloque 3: Total Power Longitudinal DS y REC (Página 5) */
+            .longitudinal-block-3 {
+                display: block !important;
+                margin-top: 8px !important;
+                clear: both !important;
+            }
+
+            .longitudinal-block-3 .charts-grid-2 {
+                break-after: auto !important;
+                page-break-after: auto !important; /* No break after, stays on same page */
             }
         }
     </style>
@@ -1181,7 +1217,7 @@
 
                 <div class="chart-card">
                     <div class="chart-header-row">
-                        <span class="chart-title">Distribución Espectral de Potencia (%)</span>
+                        <span class="chart-title">Potencia Espectral Absoluta (ms²)</span>
                         <div class="chart-legend">
                             <div class="legend-item">
                                 <div class="legend-dot" style="background: var(--accent-hf);"></div>HF
@@ -1213,6 +1249,25 @@
                 </div>
             </div>
 
+            <!-- Spectral Balance Full-Width Card -->
+            <div class="chart-card" style="margin-top: 16px;" id="spectral-balance-card">
+                <div class="chart-header-row">
+                    <span class="chart-title">Balance Autonómico Espectral (n.u.) y Potencia Total</span>
+                    <div class="chart-legend">
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background: var(--accent-lf);"></div>LF n.u.
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background: var(--accent-hf);"></div>HF n.u.
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background: var(--accent-tp);"></div>Total Power
+                        </div>
+                    </div>
+                </div>
+                <div class="svg-container" id="container-chart5" style="height: 250px;"></div>
+            </div>
+
             <!-- Quantitative Table -->
             <div class="table-container">
                 <div class="chart-title" style="margin-bottom: 12px;">Resumen Cuantitativo por Fases</div>
@@ -1225,7 +1280,10 @@
                             <th>RMSSD (ms)</th>
                             <th>PNS Index</th>
                             <th>SNS Index</th>
-                            <th>LF/HF (FFT)</th>
+                            <th>LF/HF</th>
+                            <th>LF (n.u.)</th>
+                            <th>HF (n.u.)</th>
+                            <th>TP (ms²)</th>
                             <th>Stress Index</th>
                         </tr>
                     </thead>
@@ -1457,8 +1515,54 @@
                         <div class="svg-container" id="long-chart-6"></div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Longitudinal Method Note -->
+            <!-- ================= SECCIÓN 3: TOTAL POWER LONGITUDINAL DS Y REC ================= -->
+            <div class="longitudinal-block-3">
+                <div class="print-long-header">
+                    <h3>Seguimiento Espectral Longitudinal — Total Power (ms²)</h3>
+                    <span class="info-pill" style="font-size: 0.72rem; padding: 2px 8px;">Potencia total del espectro | DS (Reposo) y REC (Recuperación)</span>
+                </div>
+
+                <div class="charts-grid-2" style="margin-top: 12px;">
+                    <!-- Total Power DS -->
+                    <div class="chart-card" id="long-card-tp-ds">
+                        <div class="chart-header-row">
+                            <span class="chart-title">Total Power — Fase 1: Decúbito Supino (DS)</span>
+                            <div class="chart-legend">
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background: var(--accent-tp);"></div>Valor Sesión
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background: var(--accent-pns);"></div>Media 7d
+                                </div>
+                            </div>
+                        </div>
+                        <div class="svg-container" id="long-chart-tp-ds"></div>
+                    </div>
+
+                    <!-- Total Power REC -->
+                    <div class="chart-card" id="long-card-tp-rec">
+                        <div class="chart-header-row">
+                            <span class="chart-title">Total Power — Fase 6: Recuperación (REC)</span>
+                            <div class="chart-legend">
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background: var(--accent-tp);"></div>Valor Sesión
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background: var(--accent-pns);"></div>Media 7d
+                                </div>
+                            </div>
+                        </div>
+                        <div class="svg-container" id="long-chart-tp-rec"></div>
+                    </div>
+                </div>
+
+                <div class="interp-box interp-pns longitudinal-method-note">
+                    <h4>Interpretación Clínica de la Potencia Total (Task Force 1996)</h4>
+                    <p>Total Power (ms²) cuantifica la energía total del espectro autonómico. Caídas marcadas en reposo (DS) alertan sobre sobreentrenamiento, fatiga sistémica o estrés crónico, mientras que la recuperación (REC) evalúa la capacidad de restauración vagal tras el esfuerzo.</p>
+                </div>
+
                 <div class="interp-box interp-pns longitudinal-method-note">
                     <h4>Metodología de Normalidad Individual (Smallest Worthwhile Change - SWC)</h4>
                     <p>Las primeras 6 pruebas se representan como puntos individuales de adquisición. A partir del registro
@@ -1762,6 +1866,9 @@
                 "5. RUFF (Test de Ruffier)",
                 "6. REC (Recuperación)"
             ];
+            const lfNu = session.lf_nu || [];
+            const hfNu = session.hf_nu || [];
+            const tp = session.total_power || [];
             for (let i = 0; i < 6; i++) {
                 const tr = document.createElement('tr');
                 
@@ -1772,6 +1879,10 @@
                 const snsVal = session.sns[i];
                 const snsStyle = (i === 4) ? 'style="color: var(--accent-sns); font-weight: 600;"' : '';
                 const snsText = snsVal >= 0 ? `+${snsVal.toFixed(2)}` : snsVal.toFixed(2);
+
+                const lfNuVal = lfNu[i] != null ? lfNu[i].toFixed(1) : '-';
+                const hfNuVal = hfNu[i] != null ? hfNu[i].toFixed(1) : '-';
+                const tpVal = tp[i] != null ? tp[i].toFixed(1) : '-';
                 
                 tr.innerHTML = `
                     <td><strong>${phaseNames[i]}</strong></td>
@@ -1781,6 +1892,9 @@
                     <td ${pnsStyle}>${pnsText}</td>
                     <td ${snsStyle}>${snsText}</td>
                     <td>${session.lfhf[i] !== null ? session.lfhf[i].toFixed(2) : '-'}</td>
+                    <td style="color: var(--accent-lf); font-weight: 500;">${lfNuVal}</td>
+                    <td style="color: var(--accent-hf); font-weight: 500;">${hfNuVal}</td>
+                    <td style="color: var(--accent-tp); font-weight: 500;">${tpVal}</td>
                     <td>${session.stress[i] !== null ? session.stress[i].toFixed(2) : '-'}</td>
                 `;
                 tbody.appendChild(tr);
@@ -1964,7 +2078,7 @@
             const unit = currentMetric === 'rmssd' ? 'ms' : '';
 
             const svgW = 420, svgH = 200;
-            const padL = 45, padR = 20, padT = 20, padB = 30;
+            const padL = 48, padR = 20, padT = 20, padB = 30;
             const chartW = svgW - padL - padR, chartH = svgH - padT - padB;
 
             const allVals = [...rawData];
@@ -1975,9 +2089,10 @@
             minVal = Math.max(0, minVal - margin);
             maxVal = maxVal + margin;
 
+            const innerMargin = 16;
             const getX = (i) => {
                 if (sessions.length <= 1) return padL + chartW / 2;
-                return padL + (i / (sessions.length - 1)) * chartW;
+                return padL + innerMargin + (i / (sessions.length - 1)) * (chartW - 2 * innerMargin);
             };
             const getY = (val) => padT + chartH - ((val - minVal) / (maxVal - minVal)) * chartH;
 
@@ -2075,6 +2190,128 @@
             for (let p = 1; p <= 6; p++) {
                 renderLongitudinalChart(`long-chart-${p}`, p);
             }
+            // Total Power longitudinal charts (DS = phase 1, REC = phase 6)
+            renderTotalPowerLongitudinal('long-chart-tp-ds', 1);
+            renderTotalPowerLongitudinal('long-chart-tp-rec', 6);
+        }
+
+        // Total Power Longitudinal Chart (uses total_power array instead of rmssd/lfhf)
+        function renderTotalPowerLongitudinal(containerId, phaseIndex) {
+            const container = document.getElementById(containerId);
+            if (!container || sessions.length === 0) return;
+
+            // Extract total power data for this phase
+            const rawData = sessions.map(s => {
+                const tp = s.total_power || [];
+                return tp[phaseIndex - 1] != null ? tp[phaseIndex - 1] : null;
+            });
+
+            // Filter out nulls for computation but keep indices
+            const validData = rawData.map((v, i) => v != null ? v : 0);
+            const baseline = computeRollingBaseline(validData);
+            const unit = 'ms²';
+
+            const svgW = 420, svgH = 200;
+            const padL = 52, padR = 20, padT = 20, padB = 30;
+            const chartW = svgW - padL - padR, chartH = svgH - padT - padB;
+
+            const allVals = [...validData];
+            baseline.forEach(b => { if (b.valid) { allVals.push(b.upper); allVals.push(b.lower); } });
+            let minVal = Math.min(...allVals);
+            let maxVal = Math.max(...allVals);
+            const margin = (maxVal - minVal) * 0.25 || 1;
+            minVal = Math.max(0, minVal - margin);
+            maxVal = maxVal + margin;
+
+            const innerMargin = 16;
+            const getX = (i) => {
+                if (sessions.length <= 1) return padL + chartW / 2;
+                return padL + innerMargin + (i / (sessions.length - 1)) * (chartW - 2 * innerMargin);
+            };
+            const getY = (val) => padT + chartH - ((val - minVal) / (maxVal - minVal)) * chartH;
+
+            let grid = '';
+            const numTicks = 4;
+            for (let t = 0; t <= numTicks; t++) {
+                let v = minVal + (t / numTicks) * (maxVal - minVal);
+                let y = getY(v);
+                let labelVal = v >= 1000 ? `${(v / 1000).toFixed(1)}k` : Math.round(v);
+                grid += `<line x1="${padL}" y1="${y}" x2="${svgW - padR}" y2="${y}" class="grid-line" />`;
+                grid += `<text x="${padL - 6}" y="${y + 3}" class="axis-label" text-anchor="end">${labelVal}</text>`;
+            }
+
+            // X axis labels
+            const labelIndices = [];
+            if (sessions.length > 1) {
+                if (sessions.length <= 7) {
+                    for (let i = 0; i < sessions.length; i++) labelIndices.push(i);
+                } else {
+                    labelIndices.push(0);
+                    labelIndices.push(Math.floor(sessions.length / 2));
+                    labelIndices.push(sessions.length - 1);
+                }
+            } else if (sessions.length === 1) {
+                labelIndices.push(0);
+            }
+            labelIndices.forEach(idx => {
+                grid += `<text x="${getX(idx)}" y="${svgH - 8}" class="axis-label" text-anchor="middle">${sessions[idx].date}</text>`;
+            });
+
+            // SWC area and mean line
+            let areaPath = '';
+            let meanLine = '';
+            if (sessions.length >= 7) {
+                let upperPoints = [];
+                let lowerPoints = [];
+                for (let i = 6; i < sessions.length; i++) {
+                    upperPoints.push(`${getX(i)},${getY(baseline[i].upper)}`);
+                    lowerPoints.unshift(`${getX(i)},${getY(baseline[i].lower)}`);
+                }
+                if (upperPoints.length > 0) {
+                    areaPath = `<polygon points="${upperPoints.join(' ')} ${lowerPoints.join(' ')}" fill="rgba(34, 211, 238, 0.18)" stroke="rgba(34, 211, 238, 0.4)" stroke-width="1" stroke-dasharray="3,3" />`;
+                }
+                let meanPathData = [];
+                for (let i = 6; i < sessions.length; i++) {
+                    meanPathData.push(`${i === 6 ? 'M' : 'L'} ${getX(i)} ${getY(baseline[i].mean)}`);
+                }
+                if (meanPathData.length > 0) {
+                    meanLine = `<path d="${meanPathData.join(' ')}" fill="none" stroke="#10b981" stroke-width="2.2" />`;
+                }
+            }
+
+            const lineRaw = validData.map((d, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(d)}`).join(' ');
+            let pointsSvg = '';
+
+            validData.forEach((d, i) => {
+                let s = sessions[i];
+                let b = baseline[i];
+                let info = `&lt;b&gt;Sesión ${s.session} (${s.date})&lt;/b&gt;&lt;br&gt;Total Power: ${rawData[i] != null ? rawData[i].toFixed(1) : '-'} ${unit}`;
+                if (s.subjective && s.subjective.completed) {
+                    if (s.subjective.readiness !== null && s.subjective.readiness !== undefined) {
+                        info += `&lt;br&gt;&lt;span style='color:#38bdf8;'&gt;⚡ Readiness: ${s.subjective.readiness}/10&lt;/span&gt;`;
+                    }
+                    if (s.subjective.sleep_hours !== null && s.subjective.sleep_hours !== undefined) {
+                        info += `&lt;br&gt;&lt;span style='color:#94a3b8;'&gt;💤 Sueño: ${s.subjective.sleep_hours}h&lt;/span&gt;`;
+                    }
+                }
+                if (b && b.valid && sessions.length >= 7) {
+                    info += `&lt;br&gt;&lt;span style='color:#10b981;'&gt;Media 7d: ${b.mean} ${unit}&lt;/span&gt;&lt;br&gt;&lt;span style='color:#22d3ee;'&gt;Rango: ${b.lower} - ${b.upper}&lt;/span&gt;`;
+                } else {
+                    info += `&lt;br&gt;&lt;i style='color:#94a3b8;'&gt;Construyendo línea base (${i + 1}/7)&lt;/i&gt;`;
+                }
+
+                pointsSvg += `<circle cx="${getX(i)}" cy="${getY(d)}" r="3.5" fill="#22d3ee" stroke="#0b1120" stroke-width="1.5" class="data-point" data-tooltip="${info}" />`;
+            });
+
+            container.innerHTML = `
+                <svg viewBox="0 0 ${svgW} ${svgH}">
+                    ${grid}
+                    ${areaPath}
+                    <path d="${lineRaw}" fill="none" stroke="rgba(34, 211, 238, 0.45)" stroke-width="1.2" />
+                    ${meanLine}
+                    ${pointsSvg}
+                </svg>
+            `;
         }
 
         // ==========================================
@@ -2170,38 +2407,54 @@
                 `;
             })();
 
-            // Chart 3: Spectral Power
+            // Chart 3: Absolute Spectral Power (ms²) - Grouped Bars with Log Scale
             (function () {
-                const hfData = session.hf;
-                const lfData = session.lf;
-                const vlfData = session.vlf;
-                const svgW = 520, svgH = 200, padL = 60, padR = 25, padT = 15, padB = 25;
+                const vlfAbs = session.vlf_abs || session.vlf.map(() => 0);
+                const lfAbs = session.lf_abs || session.lf.map(() => 0);
+                const hfAbs = session.hf_abs || session.hf.map(() => 0);
+                const svgW = 520, svgH = 200, padL = 55, padR = 20, padT = 15, padB = 25;
                 const chartW = svgW - padL - padR, chartH = svgH - padT - padB;
-                const getY = (val) => padT + chartH - (val / 100) * chartH;
+
+                // Find range for log scale
+                const allVals = [...vlfAbs, ...lfAbs, ...hfAbs].filter(v => v != null && v > 0);
+                const logMin = Math.floor(Math.log10(Math.max(1, Math.min(...allVals))));
+                const logMax = Math.ceil(Math.log10(Math.max(10, Math.max(...allVals))));
+                const getY = (val) => {
+                    if (val <= 0) return padT + chartH;
+                    const logVal = Math.log10(val);
+                    return padT + chartH - ((logVal - logMin) / (logMax - logMin)) * chartH;
+                };
 
                 let grid = '';
-                [0, 25, 50, 75, 100].forEach(v => {
-                    let y = getY(v);
+                for (let exp = logMin; exp <= logMax; exp++) {
+                    let y = padT + chartH - ((exp - logMin) / (logMax - logMin)) * chartH;
                     grid += `<line x1="${padL}" y1="${y}" x2="${svgW - padR}" y2="${y}" class="grid-line" />`;
-                    grid += `<text x="${padL - 10}" y="${y + 3}" class="axis-label" text-anchor="end">${v}%</text>`;
-                });
+                    const label = exp >= 3 ? `${Math.pow(10, exp - 3)}k` : `${Math.pow(10, exp)}`;
+                    grid += `<text x="${padL - 8}" y="${y + 3}" class="axis-label" text-anchor="end">${label}</text>`;
+                }
                 phasesNames.forEach((p, i) => {
                     grid += `<text x="${padL + (i + 0.5) * (chartW / 6)}" y="${svgH - 6}" class="axis-label" text-anchor="middle">${p}</text>`;
                 });
 
                 let bars = '';
-                const barW = 32;
+                const groupW = 36;
+                const barW = 10;
+                const gap = 1;
                 phasesNames.forEach((_, i) => {
-                    let x = padL + (i + 0.5) * (chartW / 6) - (barW / 2);
-                    let vlf = vlfData[i], lf = lfData[i], hf = hfData[i];
-
-                    bars += `
-                        <g class="data-point" data-tooltip="&lt;b&gt;${phasesNames[i]}&lt;/b&gt;&lt;br&gt;HF: ${hf}%&lt;br&gt;LF: ${lf}%&lt;br&gt;VLF: ${vlf}%">
-                            <rect x="${x}" y="${getY(vlf)}" width="${barW}" height="${(vlf / 100) * chartH}" fill="#64748b" />
-                            <rect x="${x}" y="${getY(vlf + lf)}" width="${barW}" height="${(lf / 100) * chartH}" fill="#f59e0b" />
-                            <rect x="${x}" y="${getY(vlf + lf + hf)}" width="${barW}" height="${(hf / 100) * chartH}" fill="#8b5cf6" rx="2" />
-                        </g>
-                    `;
+                    let cx = padL + (i + 0.5) * (chartW / 6);
+                    let x0 = cx - groupW / 2;
+                    const vals = [
+                        { v: vlfAbs[i], c: '#64748b', label: 'VLF' },
+                        { v: lfAbs[i], c: '#f59e0b', label: 'LF' },
+                        { v: hfAbs[i], c: '#8b5cf6', label: 'HF' }
+                    ];
+                    vals.forEach((d, j) => {
+                        const bx = x0 + j * (barW + gap);
+                        const by = getY(d.v);
+                        const bh = padT + chartH - by;
+                        const vText = d.v != null ? d.v.toFixed(1) : '-';
+                        bars += `<rect x="${bx}" y="${by}" width="${barW}" height="${Math.max(0, bh)}" fill="${d.c}" rx="1.5" class="data-point" data-tooltip="&lt;b&gt;${phasesNames[i]}&lt;/b&gt;&lt;br&gt;${d.label}: ${vText} ms²" />`;
+                    });
                 });
 
                 document.getElementById('container-chart3').innerHTML = `
@@ -2246,6 +2499,115 @@
                         <path d="${makePath(sd1Data)}" fill="none" stroke="#06b6d4" stroke-width="2" />
                         <path d="${makePath(sd2Data)}" fill="none" stroke="#ec4899" stroke-width="2" />
                         ${pts}
+                    </svg>
+                `;
+            })();
+
+            // Chart 5: Autonomic Balance (n.u.) Divergent Bars + Total Power Spark
+            (function () {
+                const lfNu = session.lf_nu || [];
+                const hfNu = session.hf_nu || [];
+                const tpData = session.total_power || [];
+                if (lfNu.length === 0 && hfNu.length === 0) {
+                    document.getElementById('container-chart5').innerHTML = '<div style="text-align:center; color: var(--text-muted); padding: 40px; font-size: 0.85rem;">Datos de n.u. no disponibles para esta sesión</div>';
+                    return;
+                }
+
+                const svgW = 700, svgH = 250, padL = 50, padR = 20, padT = 15, padB = 60;
+                const nuH = 140; // height for n.u. divergent section
+                const tpTop = padT + nuH + 18; // top of total power section
+                const tpH = 25; // total power bar height
+                const chartW = svgW - padL - padR;
+
+                // N.U. divergent: center at 50%, LF goes up from center, HF goes down
+                const nuCenter = padT + nuH / 2;
+                const halfH = nuH / 2;
+
+                let grid = '';
+                // Horizontal center line at 50%
+                grid += `<line x1="${padL}" y1="${nuCenter}" x2="${svgW - padR}" y2="${nuCenter}" stroke="#475569" stroke-width="1" stroke-dasharray="4,3" />`;
+                grid += `<text x="${padL - 8}" y="${nuCenter + 3}" class="axis-label" text-anchor="end" style="font-weight:600;">50</text>`;
+                // Top (100% LF)
+                grid += `<line x1="${padL}" y1="${padT}" x2="${svgW - padR}" y2="${padT}" class="grid-line" />`;
+                grid += `<text x="${padL - 8}" y="${padT + 4}" class="axis-label" text-anchor="end">100</text>`;
+                // Bottom (100% HF)
+                grid += `<line x1="${padL}" y1="${padT + nuH}" x2="${svgW - padR}" y2="${padT + nuH}" class="grid-line" />`;
+                grid += `<text x="${padL - 8}" y="${padT + nuH + 4}" class="axis-label" text-anchor="end">100</text>`;
+                // Mid marks
+                grid += `<line x1="${padL}" y1="${nuCenter - halfH / 2}" x2="${svgW - padR}" y2="${nuCenter - halfH / 2}" class="grid-line" opacity="0.4" />`;
+                grid += `<text x="${padL - 8}" y="${nuCenter - halfH / 2 + 3}" class="axis-label" text-anchor="end">75</text>`;
+                grid += `<line x1="${padL}" y1="${nuCenter + halfH / 2}" x2="${svgW - padR}" y2="${nuCenter + halfH / 2}" class="grid-line" opacity="0.4" />`;
+                grid += `<text x="${padL - 8}" y="${nuCenter + halfH / 2 + 3}" class="axis-label" text-anchor="end">75</text>`;
+
+                // Labels for LF/HF sides
+                grid += `<text x="${svgW - padR + 4}" y="${padT + 12}" class="axis-label" text-anchor="start" fill="#f59e0b" style="font-weight:600; font-size: 9px;">LF↑</text>`;
+                grid += `<text x="${svgW - padR + 4}" y="${padT + nuH - 2}" class="axis-label" text-anchor="start" fill="#8b5cf6" style="font-weight:600; font-size: 9px;">HF↓</text>`;
+
+                let bars = '';
+                const barW = 38;
+                phasesNames.forEach((_, i) => {
+                    let cx = padL + (i + 0.5) * (chartW / 6);
+                    let x = cx - barW / 2;
+                    const lf = lfNu[i] != null ? lfNu[i] : 50;
+                    const hf = hfNu[i] != null ? hfNu[i] : 50;
+
+                    // LF bar: goes UP from center, height proportional to (lf - 50)
+                    const lfDev = Math.max(0, lf - 50);
+                    const lfBarH = (lfDev / 50) * halfH;
+                    const lfY = nuCenter - lfBarH;
+
+                    // HF bar: goes DOWN from center, height proportional to (hf - 50)
+                    const hfDev = Math.max(0, hf - 50);
+                    const hfBarH = (hfDev / 50) * halfH;
+
+                    // If LF < 50, show it below center as dimmed
+                    const lfBelow = Math.max(0, 50 - lf);
+                    const lfBelowH = (lfBelow / 50) * halfH;
+
+                    // If HF < 50, show it above center as dimmed
+                    const hfAbove = Math.max(0, 50 - hf);
+                    const hfAboveH = (hfAbove / 50) * halfH;
+
+                    const tooltip = `&lt;b&gt;${phasesNames[i]}&lt;/b&gt;&lt;br&gt;LF: ${lfNu[i] != null ? lfNu[i].toFixed(1) : '-'} n.u.&lt;br&gt;HF: ${hfNu[i] != null ? hfNu[i].toFixed(1) : '-'} n.u.&lt;br&gt;TP: ${tpData[i] != null ? tpData[i].toFixed(1) : '-'} ms²`;
+
+                    // LF above center (dominant sympathetic)
+                    if (lfDev > 0) {
+                        bars += `<rect x="${x}" y="${lfY}" width="${barW}" height="${lfBarH}" fill="#f59e0b" opacity="0.85" rx="2" class="data-point" data-tooltip="${tooltip}" />`;
+                    }
+                    // HF below center (dominant vagal)
+                    if (hfDev > 0) {
+                        bars += `<rect x="${x}" y="${nuCenter}" width="${barW}" height="${hfBarH}" fill="#8b5cf6" opacity="0.85" rx="2" class="data-point" data-tooltip="${tooltip}" />`;
+                    }
+
+                    // Value labels
+                    bars += `<text x="${cx}" y="${lfY - 4}" class="axis-label" text-anchor="middle" fill="#f59e0b" style="font-size:8px; font-weight:600;">${lf.toFixed(0)}</text>`;
+                    bars += `<text x="${cx}" y="${nuCenter + hfBarH + 12}" class="axis-label" text-anchor="middle" fill="#8b5cf6" style="font-size:8px; font-weight:600;">${hf.toFixed(0)}</text>`;
+                });
+
+                // Total Power spark bars section
+                let tpSection = '';
+                const maxTp = Math.max(...tpData.filter(v => v != null), 1);
+                tpSection += `<text x="${padL - 8}" y="${tpTop + tpH / 2 + 3}" class="axis-label" text-anchor="end" style="font-weight:600;">TP</text>`;
+                phasesNames.forEach((_, i) => {
+                    let cx = padL + (i + 0.5) * (chartW / 6);
+                    const tp = tpData[i] != null ? tpData[i] : 0;
+                    const tpW = Math.max(2, (tp / maxTp) * barW);
+                    let x = cx - tpW / 2;
+                    const tpLabel = tp >= 1000 ? `${(tp / 1000).toFixed(1)}k` : tp.toFixed(0);
+                    tpSection += `<rect x="${x}" y="${tpTop}" width="${tpW}" height="${tpH}" fill="#22d3ee" opacity="0.7" rx="3" class="data-point" data-tooltip="&lt;b&gt;${phasesNames[i]}&lt;/b&gt;&lt;br&gt;Total Power: ${tpData[i] != null ? tpData[i].toFixed(1) : '-'} ms²" />`;
+                    tpSection += `<text x="${cx}" y="${tpTop + tpH + 12}" class="axis-label" text-anchor="middle" fill="#22d3ee" style="font-size:8px; font-weight:500;">${tpLabel}</text>`;
+                });
+
+                // Phase labels below TP
+                phasesNames.forEach((p, i) => {
+                    grid += `<text x="${padL + (i + 0.5) * (chartW / 6)}" y="${svgH - 4}" class="axis-label" text-anchor="middle">${p}</text>`;
+                });
+
+                document.getElementById('container-chart5').innerHTML = `
+                    <svg viewBox="0 0 ${svgW} ${svgH}">
+                        ${grid}
+                        ${bars}
+                        ${tpSection}
                     </svg>
                 `;
             })();
