@@ -161,38 +161,88 @@ def parse_csv_file(filepath):
 
 def calculate_suggested_conclusions(session):
     pns_basal = session["rmssd"][0]
-    pns_peak = session["rmssd"][2]
-    hf_peak = session["hf"][2]
     
-    # PNS
-    pns_text = (
-        f"Marcada amplificación parasimpática durante la respiración pautada "
-        f"(RMSSD de {pns_basal:.1f} a {pns_peak:.1f} ms y HF relativo de {hf_peak:.1f}%). "
-        f"Confirma un acoplamiento cardiorrespiratorio normal y alta capacidad de modulación vagal."
-    )
+    # 1. Reserva Vagal (Mayor entre RC10 y RC12)
+    rc10_rmssd = session["rmssd"][1] if len(session["rmssd"]) > 1 and session["rmssd"][1] is not None else 0
+    rc12_rmssd = session["rmssd"][2] if len(session["rmssd"]) > 2 and session["rmssd"][2] is not None else 0
     
-    # SNS
+    if rc10_rmssd > rc12_rmssd:
+        pns_peak = rc10_rmssd
+        hf_peak = session["hf"][1] if len(session["hf"]) > 1 and session["hf"][1] is not None else 0
+        phase_name = "RC10 (10 rpm)"
+    else:
+        pns_peak = rc12_rmssd
+        hf_peak = session["hf"][2] if len(session["hf"]) > 2 and session["hf"][2] is not None else 0
+        phase_name = "RC12 (12 rpm)"
+        
+    delta_pns = pns_peak - pns_basal
+    if delta_pns >= 20.0 or (pns_basal > 0 and pns_peak >= 1.5 * pns_basal):
+        pns_text = (
+            f"Marcada amplificación parasimpática durante la respiración pautada en {phase_name} "
+            f"(RMSSD de {pns_basal:.1f} a {pns_peak:.1f} ms y HF relativo de {hf_peak:.1f}%). "
+            f"Confirma un acoplamiento cardiorrespiratorio normal y alta capacidad de modulación vagal."
+        )
+    elif delta_pns > 0:
+        pns_text = (
+            f"Modesta amplificación parasimpática durante la respiración pautada en {phase_name} "
+            f"(RMSSD de {pns_basal:.1f} a {pns_peak:.1f} ms y HF relativo de {hf_peak:.1f}%). "
+            f"Refleja modulación vagal presente con respuesta amortiguada al estímulo respiratorio."
+        )
+    else:
+        pns_text = (
+            f"Respuesta vagal atenuada o paradójica durante la respiración pautada "
+            f"(RMSSD basal de {pns_basal:.1f} ms vs pico de {pns_peak:.1f} ms, HF relativo {hf_peak:.1f}%). "
+            f"Sugiere baja reactividad parasimpática o interferencia autonómica en reposo."
+        )
+    
+    # 2. SNS & Ortostatismo
     hr_diff = session["hr"][3] - session["hr"][0]
-    hr_diff_text = f"+{hr_diff:.1f}" if hr_diff >= 0 else f"{hr_diff:.1f}"
+    hr_diff_text = f"{hr_diff:+.1f}"
     sns_peak = session["sns"][4]
-    sns_peak_text = f"+{sns_peak:.2f}" if sns_peak >= 0 else f"{sns_peak:.2f}"
+    sns_peak_text = f"{sns_peak:+.2f}"
     hr_peak = session["hr"][4]
-    sns_text = (
-        f"Respuesta barorrefleja intacta sin taquicardia postural patológica ({hr_diff_text} lpm). "
-        f"Adecuada activación simpática durante las 30 sentadillas "
-        f"(SNS index {sns_peak_text}, FC pico {hr_peak:.1f} lpm) con repliegue vagal transitorio."
-    )
     
-    # REC
+    if hr_diff >= 30.0:
+        ortho_eval = f"Marcada taquicardia ortostática postural ({hr_diff_text} lpm), sugestiva de reactividad postural elevada."
+    elif hr_diff >= 0:
+        ortho_eval = f"Respuesta barorrefleja intacta sin taquicardia postural patológica ({hr_diff_text} lpm)."
+    else:
+        ortho_eval = f"Respuesta ortostática atípica con desaceleración cronotrópica ({hr_diff_text} lpm)."
+        
+    if sns_peak >= 3.0:
+        ruff_eval = f"Marcada activación simpática durante las 30 sentadillas (SNS index {sns_peak_text}, FC pico {hr_peak:.1f} lpm) con repliegue vagal transitorio."
+    elif sns_peak >= 1.0:
+        ruff_eval = f"Adecuada activación simpática durante las 30 sentadillas (SNS index {sns_peak_text}, FC pico {hr_peak:.1f} lpm) con control hemodinámico."
+    else:
+        ruff_eval = f"Respuesta simpática amortiguada durante las sentadillas (SNS index {sns_peak_text}, FC pico {hr_peak:.1f} lpm)."
+        
+    sns_text = f"{ortho_eval} {ruff_eval}"
+    
+    # 3. REC
     rec_rmssd = session["rmssd"][5]
     basal_rmssd = session["rmssd"][0]
     lfhf_rec = session["lfhf"][5]
-    comparison = "superando" if rec_rmssd > basal_rmssd else "aproximándose a"
-    rec_text = (
-        f"Excelente reactivación vagal post-esfuerzo: el RMSSD recupera a {rec_rmssd:.1f} ms "
-        f"{comparison} el valor basal ({basal_rmssd:.1f} ms) y el balance LF/HF se restablece a "
-        f"{lfhf_rec:.2f} en los 6 minutos posteriores al ejercicio."
-    )
+    pns_rec = session["pns"][5]
+    ratio_rec = (rec_rmssd / basal_rmssd * 100) if basal_rmssd > 0 else 0
+    
+    if rec_rmssd >= basal_rmssd:
+        rec_text = (
+            f"Excelente reactivación vagal post-esfuerzo: el RMSSD recupera a {rec_rmssd:.1f} ms "
+            f"superando el valor basal ({basal_rmssd:.1f} ms, {ratio_rec:.0f}%) y el balance LF/HF se restablece a "
+            f"{lfhf_rec:.2f} en los 6 minutos posteriores al ejercicio."
+        )
+    elif rec_rmssd >= 0.7 * basal_rmssd:
+        rec_text = (
+            f"Reactivación vagal post-esfuerzo en curso: el RMSSD alcanza {rec_rmssd:.1f} ms "
+            f"({ratio_rec:.0f}% del valor basal de {basal_rmssd:.1f} ms) con balance LF/HF en "
+            f"{lfhf_rec:.2f} a los 6 minutos del ejercicio."
+        )
+    else:
+        rec_text = (
+            f"Recuperación vagal post-esfuerzo incompleta/lenta: el RMSSD desciende a {rec_rmssd:.1f} ms "
+            f"({ratio_rec:.0f}% del valor basal de {basal_rmssd:.1f} ms) con predominio simpático "
+            f"persistente (LF/HF {lfhf_rec:.2f}, PNS index {pns_rec:+.2f})."
+        )
     
     return pns_text, sns_text, rec_text
 
@@ -394,7 +444,7 @@ def save_patient_data(patient_name, parent_path, new_sessions, is_full_scan=Fals
                     "======================================================================\n"
                     f"• FC Basal (DS): {hr_ds:.1f} lpm  |  RMSSD Basal: {rmssd_ds:.1f} ms  |  PNS: {pns_ds:+.2f}  |  SNS: {sns_ds:+.2f}\n"
                     f"• Pico Vagal (RC12): RMSSD {rmssd_rc12:.1f} ms  |  HF: {hf_rc12:.1f}%  |  PNS: {pns_rc12:+.2f}\n"
-                    f"• Reto Ortostático (ORT): FC +{delta_hr_ort:.1f} lpm ({hr_ort:.1f} lpm)  |  LF/HF: {lfhf_ort:.2f}\n"
+                    f"• Reto Ortostático (ORT): FC {delta_hr_ort:+.1f} lpm ({hr_ort:.1f} lpm)  |  LF/HF: {lfhf_ort:.2f}\n"
                     f"• Pico Simpático (RUFF): FC pico {hr_ruff:.1f} lpm  |  SNS index: {sns_ruff:+.2f}\n"
                     f"• Recuperación (REC): RMSSD {rmssd_rec:.1f} ms  |  LF/HF: {lfhf_rec:.2f}  |  PNS: {pns_rec:+.2f}\n"
                     "======================================================================\n"
