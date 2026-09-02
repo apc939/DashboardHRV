@@ -16,8 +16,8 @@ Este proyecto permite a profesionales de la salud y fisiólogos analizar la func
 6. **REC (Recuperación en Supino)**: Cinética de reactivación vagal post-esfuerzo (4 min).
 
 El sistema genera un **Dashboard HTML interactivo** que funciona completamente fuera de línea (sin necesidad de servidores web locales) y ofrece dos modos de visualización:
-* **Evaluación de la Sesión**: KPIs basales, tablas cuantitativas de las 6 fases, 4 gráficos SVG de respuesta autonómica y conclusiones clínicas auditadas.
-* **Línea Base Longitudinal**: Seguimiento temporal de sesiones con bandas de normalidad (*Smallest Worthwhile Change*, SWC: $\pm 0.5\text{ SD}$) y media móvil de 7 días cuando se acumulan 7 o más pruebas.
+* **Evaluación de la Sesión**: KPIs basales, tablas cuantitativas de las 6 fases (incluyendo unidades normalizadas LF/HF n.u. y Potencia Total), gráficos SVG de respuesta autonómica y potencia espectral absoluta (escala logarítmica), balance autonómico divergente y conclusiones clínicas auditadas.
+* **Línea Base Longitudinal**: Seguimiento temporal de sesiones para las 6 fases (RMSSD / LF-HF) y seguimiento espectral de Potencia Total (DS y REC) con bandas de normalidad (*Smallest Worthwhile Change*, SWC: $\pm 0.5\text{ SD}$) y media móvil de 7 días cuando se acumulan 7 o más pruebas.
 
 ---
 
@@ -190,19 +190,20 @@ En la parte superior derecha de la cabecera encontrarás el menú desplegable **
 
 ---
 
-## 📥 Exportación del Dossier Clínico en PDF (4 Páginas A4)
+## 📥 Exportación del Dossier Clínico en PDF (5 Páginas A4)
 
-El Dashboard cuenta con una función nativa de exportación que convierte la interfaz interactiva en un **Dossier Médico Imprimible de 4 páginas**, limpio y en fondo claro:
+El Dashboard cuenta con una función nativa de exportación que convierte la interfaz interactiva en un **Dossier Médico Imprimible de 5 páginas**, limpio y en fondo claro:
 
 1. **Cómo generar el PDF**:
    * Haz clic en el botón **`[ 📥 Descargar PDF ]`** ubicado en la cabecera superior derecha (o usa el atajo `Cmd + P`).
    * En el diálogo de impresión de tu navegador, selecciona **Guardar como PDF**.
 
-2. **Estructura Estandarizada del Documento (4 Páginas)**:
-   * **📄 Página 1 — Evaluación de la Sesión**: Cabecera del paciente, 4 KPIs basales y 4 gráficos SVG de respuesta autonómica.
-   * **📄 Página 2 — Métricas Cuantitativas & Síntesis Clínica**: Tabla completa de las 6 fases y las 3 conclusiones clínicas auditadas por el médico.
+2. **Estructura Estandarizada del Documento (5 Páginas)**:
+   * **📄 Página 1 — Evaluación de la Sesión (Resumen & Dinámica)**: Cabecera del paciente, 4 KPIs basales, Contexto Subjetivo y 4 gráficos SVG de respuesta autonómica (FC vs RMSSD, Dinámica PNS/SNS, Potencia Absoluta log-scale y Poincaré SD1/SD2).
+   * **📄 Página 2 — Balance Espectral, Métricas & Síntesis Clínica**: Gráfico de Balance Autonómico en unidades normalizadas (n.u.) con Potencia Total, Tabla cuantitativa completa de las 6 fases (con LF/HF n.u. y TP ms²) y las 3 conclusiones clínicas auditadas por el médico.
    * **📄 Página 3 — Línea Base Longitudinal (Reposo & Respiración)**: Gráficos de seguimiento de Fase 1 (DS), Fase 2 (RC10) y Fase 3 (RC12, centrada).
-   * **📄 Página 4 — Línea Base Longitudinal (Reto & Recuperación)**: Gráficos de Fase 4 (ORT), Fase 5 (RUFF), Fase 6 (REC, centrada) y Nota metodológica sobre el rango SWC.
+   * **📄 Página 4 — Línea Base Longitudinal (Reto & Recuperación)**: Gráficos de Fase 4 (ORT), Fase 5 (RUFF) y Fase 6 (REC, centrada).
+   * **📄 Página 5 — Seguimiento Espectral Longitudinal & Metodología**: Gráficos de Potencia Total para Fase 1 (DS) y Fase 6 (REC), Interpretación Clínica de la Potencia Total (Task Force 1996) y Nota metodológica sobre el rango de normalidad individual (SWC).
 
 > [!TIP]
 > **Recomendación de Impresión**: Asegúrate de tener seleccionado el tamaño de papel **A4** y la opción **Gráficos de fondo / Background graphics: Activado** en los ajustes de impresión de tu navegador para preservar los colores de las líneas y badges.
