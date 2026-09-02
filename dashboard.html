@@ -2034,7 +2034,11 @@
             }
 
             labelIndices.forEach(idx => {
-                grid += `<text x="${getX(idx)}" y="${svgH - 8}" class="axis-label" text-anchor="middle">${sessions[idx].date}</text>`;
+                let posX = getX(idx);
+                if (idx === 0 && sessions.length > 1) {
+                    posX += 12;
+                }
+                grid += `<text x="${posX}" y="${svgH - 8}" class="axis-label" text-anchor="middle">${sessions[idx].date}</text>`;
             });
 
             // Shaded SWC area and Mean line (only if sessions count >= 7)
@@ -2164,7 +2168,11 @@
                 labelIndices.push(0);
             }
             labelIndices.forEach(idx => {
-                grid += `<text x="${getX(idx)}" y="${svgH - 8}" class="axis-label" text-anchor="middle">${sessions[idx].date}</text>`;
+                let posX = getX(idx);
+                if (idx === 0 && sessions.length > 1) {
+                    posX += 12;
+                }
+                grid += `<text x="${posX}" y="${svgH - 8}" class="axis-label" text-anchor="middle">${sessions[idx].date}</text>`;
             });
 
             // SWC area and mean line
