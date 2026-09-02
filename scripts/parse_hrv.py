@@ -102,7 +102,14 @@ def parse_csv_file(filepath):
         "LF (%):": "lf",
         "HF (%):": "hf",
         "SDNN (ms):": "sdnn",
-        "Stress index:": "stress"
+        "Stress index:": "stress",
+        # Potencias espectrales absolutas, normalizadas y total power (Task Force 1996)
+        "VLF (ms^2):": "vlf_abs",
+        "LF (ms^2):": "lf_abs",
+        "HF (ms^2):": "hf_abs",
+        "LF (n.u.):": "lf_nu",
+        "HF (n.u.):": "hf_nu",
+        "Total power (ms^2):": "total_power"
     }
     
     parsed_values = {key: None for key in metric_keys.values()}
@@ -154,7 +161,13 @@ def parse_csv_file(filepath):
         "sd1": parsed_values["sd1"],
         "sd2": parsed_values["sd2"],
         "sdnn": parsed_values["sdnn"],
-        "stress": parsed_values["stress"]
+        "stress": parsed_values["stress"],
+        "vlf_abs": parsed_values["vlf_abs"],
+        "lf_abs": parsed_values["lf_abs"],
+        "hf_abs": parsed_values["hf_abs"],
+        "lf_nu": parsed_values["lf_nu"],
+        "hf_nu": parsed_values["hf_nu"],
+        "total_power": parsed_values["total_power"]
     }
     
     return patient_name, parent_path, session_data
