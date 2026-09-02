@@ -2001,9 +2001,10 @@
             minVal = Math.max(0, minVal - margin);
             maxVal = maxVal + margin;
 
+            const innerMargin = 16;
             const getX = (i) => {
                 if (sessions.length <= 1) return padL + chartW / 2;
-                return padL + (i / (sessions.length - 1)) * chartW;
+                return padL + innerMargin + (i / (sessions.length - 1)) * (chartW - 2 * innerMargin);
             };
             const getY = (val) => padT + chartH - ((val - minVal) / (maxVal - minVal)) * chartH;
 
@@ -2034,11 +2035,7 @@
             }
 
             labelIndices.forEach(idx => {
-                let posX = getX(idx);
-                if (idx === 0 && sessions.length > 1) {
-                    posX += 16;
-                }
-                grid += `<text x="${posX}" y="${svgH - 8}" class="axis-label" text-anchor="middle">${sessions[idx].date}</text>`;
+                grid += `<text x="${getX(idx)}" y="${svgH - 8}" class="axis-label" text-anchor="middle">${sessions[idx].date}</text>`;
             });
 
             // Shaded SWC area and Mean line (only if sessions count >= 7)
@@ -2127,7 +2124,7 @@
             const unit = 'ms²';
 
             const svgW = 420, svgH = 200;
-            const padL = 58, padR = 20, padT = 20, padB = 30;
+            const padL = 52, padR = 20, padT = 20, padB = 30;
             const chartW = svgW - padL - padR, chartH = svgH - padT - padB;
 
             const allVals = [...validData];
@@ -2138,9 +2135,10 @@
             minVal = Math.max(0, minVal - margin);
             maxVal = maxVal + margin;
 
+            const innerMargin = 16;
             const getX = (i) => {
                 if (sessions.length <= 1) return padL + chartW / 2;
-                return padL + (i / (sessions.length - 1)) * chartW;
+                return padL + innerMargin + (i / (sessions.length - 1)) * (chartW - 2 * innerMargin);
             };
             const getY = (val) => padT + chartH - ((val - minVal) / (maxVal - minVal)) * chartH;
 
@@ -2168,11 +2166,7 @@
                 labelIndices.push(0);
             }
             labelIndices.forEach(idx => {
-                let posX = getX(idx);
-                if (idx === 0 && sessions.length > 1) {
-                    posX += 20;
-                }
-                grid += `<text x="${posX}" y="${svgH - 8}" class="axis-label" text-anchor="middle">${sessions[idx].date}</text>`;
+                grid += `<text x="${getX(idx)}" y="${svgH - 8}" class="axis-label" text-anchor="middle">${sessions[idx].date}</text>`;
             });
 
             // SWC area and mean line
