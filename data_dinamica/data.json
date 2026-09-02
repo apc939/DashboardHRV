@@ -240,6 +240,126 @@
                 "alcohol": "No",
                 "symptoms": "Ninguno"
             }
+        },
+        {
+            "date": "02/09",
+            "full_date": "02/09/2026",
+            "hr": [
+                55.7,
+                52.9,
+                54.4,
+                74.6,
+                93.4,
+                67.2
+            ],
+            "rmssd": [
+                48.6,
+                47.0,
+                40.9,
+                23.7,
+                8.6,
+                46.9
+            ],
+            "pns": [
+                0.74,
+                1.17,
+                0.8,
+                -1.16,
+                -2.35,
+                0.01
+            ],
+            "sns": [
+                -1.21,
+                -0.68,
+                -0.85,
+                0.87,
+                4.61,
+                -0.22
+            ],
+            "vlf": [
+                14.2,
+                0.2,
+                20.7,
+                7.5,
+                58.2,
+                0.5
+            ],
+            "lf": [
+                81.8,
+                26.2,
+                30.9,
+                87.8,
+                37.1,
+                70.7
+            ],
+            "hf": [
+                4.0,
+                73.5,
+                48.3,
+                4.6,
+                4.7,
+                28.8
+            ],
+            "lfhf": [
+                20.54,
+                0.36,
+                0.64,
+                18.91,
+                7.87,
+                2.45
+            ],
+            "sd1": [
+                34.4,
+                33.6,
+                29.3,
+                16.8,
+                6.1,
+                33.2
+            ],
+            "sd2": [
+                111.5,
+                48.8,
+                53.2,
+                62.1,
+                26.0,
+                63.6
+            ],
+            "sdnn": [
+                82.6,
+                42.1,
+                45.1,
+                45.8,
+                19.1,
+                50.7
+            ],
+            "stress": [
+                4.88,
+                10.81,
+                8.7,
+                10.45,
+                26.24,
+                7.45
+            ],
+            "session": 3,
+            "reviewed": false,
+            "conclusions": {
+                "pns": "No se ha realizado el análisis",
+                "sns": "No se ha realizado el análisis",
+                "rec": "No se ha realizado el análisis"
+            },
+            "subjective": {
+                "completed": true,
+                "sleep_hours": 8,
+                "sleep_quality": 5,
+                "mood": 5,
+                "pain_scale": 0,
+                "pain_detail": "Ninguno",
+                "readiness": 9,
+                "previous_exercise": "20min fuerza con Kettlebell",
+                "caffeine": "1 taza matutina",
+                "alcohol": "No",
+                "symptoms": "Molestia escapular izquierda"
+            }
         }
     ]
 }
