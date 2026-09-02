@@ -1990,7 +1990,7 @@
             const unit = currentMetric === 'rmssd' ? 'ms' : '';
 
             const svgW = 420, svgH = 200;
-            const padL = 45, padR = 20, padT = 20, padB = 30;
+            const padL = 48, padR = 20, padT = 20, padB = 30;
             const chartW = svgW - padL - padR, chartH = svgH - padT - padB;
 
             const allVals = [...rawData];
@@ -2036,7 +2036,7 @@
             labelIndices.forEach(idx => {
                 let posX = getX(idx);
                 if (idx === 0 && sessions.length > 1) {
-                    posX += 12;
+                    posX += 16;
                 }
                 grid += `<text x="${posX}" y="${svgH - 8}" class="axis-label" text-anchor="middle">${sessions[idx].date}</text>`;
             });
@@ -2127,7 +2127,7 @@
             const unit = 'ms²';
 
             const svgW = 420, svgH = 200;
-            const padL = 50, padR = 20, padT = 20, padB = 30;
+            const padL = 58, padR = 20, padT = 20, padB = 30;
             const chartW = svgW - padL - padR, chartH = svgH - padT - padB;
 
             const allVals = [...validData];
@@ -2170,7 +2170,7 @@
             labelIndices.forEach(idx => {
                 let posX = getX(idx);
                 if (idx === 0 && sessions.length > 1) {
-                    posX += 12;
+                    posX += 20;
                 }
                 grid += `<text x="${posX}" y="${svgH - 8}" class="axis-label" text-anchor="middle">${sessions[idx].date}</text>`;
             });
