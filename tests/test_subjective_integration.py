@@ -7,7 +7,7 @@ import json
 import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts"))
-from parse_hrv import read_subjective_from_file, parse_csv_file, save_patient_data
+from parse_hrv import read_subjective_from_file, parse_csv_file, save_patient_data, calculate_suggested_conclusions
 
 class TestSubjectiveIntegration(unittest.TestCase):
     def setUp(self):
@@ -205,6 +205,56 @@ class TestSubjectiveIntegration(unittest.TestCase):
         # 2. Proceso pasando directamente el archivo de notas
         ret_concl = os.system(f"python3 scripts/parse_hrv.py {concl_file} > /dev/null 2>&1")
         self.assertEqual(ret_concl, 0)
+
+    def test_suggested_conclusions_robust_recovery(self):
+        session = {
+            "hr": [60.0, 60.5, 61.0, 66.0, 92.0, 62.0],
+            "rmssd": [40.0, 65.0, 85.0, 32.0, 15.0, 48.0],
+            "pns": [0.20, 1.10, 1.65, -0.40, -2.10, 0.50],
+            "sns": [-0.50, -0.60, -0.70, 0.10, 3.20, -0.15],
+            "hf": [5.0, 80.0, 88.5, 20.0, 15.0, 40.0],
+            "lfhf": [15.0, 0.12, 0.08, 4.0, 5.5, 1.2]
+        }
+        pns_text, sns_text, rec_text = calculate_suggested_conclusions(session)
+        self.assertIn("Marcada amplificación parasimpática", pns_text)
+        self.assertIn("RC12 (12 rpm)", pns_text)
+        self.assertIn("Respuesta barorrefleja intacta", sns_text)
+        self.assertIn("+6.0 lpm", sns_text)
+        self.assertIn("Marcada activación simpática", sns_text)
+        self.assertIn("Excelente reactivación vagal post-esfuerzo", rec_text)
+        self.assertIn("superando el valor basal", rec_text)
+
+    def test_suggested_conclusions_depressed_recovery_and_atypical_response(self):
+        # Caso similar a la sesión 02092026: caída post-esfuerzo severa y ortostatismo negativo
+        session = {
+            "hr": [57.5, 56.0, 55.0, 54.4, 74.6, 68.0],
+            "rmssd": [39.5, 42.0, 47.0, 35.0, 12.0, 8.6],
+            "pns": [0.36, 0.80, 1.17, -0.10, -1.80, -2.35],
+            "sns": [-0.81, -0.90, -0.85, -0.50, 0.87, 1.45],
+            "hf": [10.0, 60.0, 73.5, 15.0, 10.0, 8.0],
+            "lfhf": [2.5, 0.30, 0.25, 0.64, 2.10, 7.87]
+        }
+        pns_text, sns_text, rec_text = calculate_suggested_conclusions(session)
+        self.assertIn("Modesta amplificación parasimpática", pns_text)
+        self.assertIn("Respuesta ortostática atípica con desaceleración cronotrópica (-3.1 lpm)", sns_text)
+        self.assertIn("Respuesta simpática amortiguada", sns_text)
+        self.assertIn("Recuperación vagal post-esfuerzo incompleta/lenta", rec_text)
+        self.assertIn("predominio simpático persistente", rec_text)
+        self.assertNotIn("+-", sns_text)
+
+    def test_suggested_conclusions_rc10_peak_and_high_orthostatic_tachycardia(self):
+        session = {
+            "hr": [65.0, 66.0, 67.0, 98.0, 110.0, 70.0],
+            "rmssd": [30.0, 80.0, 45.0, 20.0, 10.0, 25.0],
+            "pns": [0.0, 1.8, 0.6, -1.2, -2.5, -0.2],
+            "sns": [0.1, -0.2, 0.0, 2.5, 4.2, 0.8],
+            "hf": [8.0, 85.0, 50.0, 10.0, 5.0, 25.0],
+            "lfhf": [5.0, 0.1, 1.5, 8.0, 12.0, 2.8]
+        }
+        pns_text, sns_text, rec_text = calculate_suggested_conclusions(session)
+        self.assertIn("RC10 (10 rpm)", pns_text)
+        self.assertIn("Marcada taquicardia ortostática postural (+33.0 lpm)", sns_text)
+        self.assertIn("Reactivación vagal post-esfuerzo en curso", rec_text)
 
 if __name__ == "__main__":
     unittest.main()

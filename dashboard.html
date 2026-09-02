@@ -1068,7 +1068,7 @@
                 <div class="card">
                     <span class="card-header">Pico Reactividad Vagal</span>
                     <span class="card-value" style="color: var(--accent-pns);" id="kpi-vagal-react">- <small style="font-size: 0.9rem;">ms</small></span>
-                    <span class="card-desc">RMSSD durante respiración a 12 rpm</span>
+                    <span class="card-desc" id="kpi-vagal-react-desc">RMSSD durante respiración pautada</span>
                 </div>
                 <div class="card">
                     <span class="card-header">Pico Simpático (Ruffier)</span>
@@ -1078,7 +1078,7 @@
                 <div class="card">
                     <span class="card-header">Recuperación Post-Esfuerzo</span>
                     <span class="card-value" style="color: var(--accent-hf);" id="kpi-rec-rmssd">- <small style="font-size: 0.9rem;">ms</small></span>
-                    <span class="card-desc" id="kpi-rec-desc">RMSSD restaurado > basal (- ms)</span>
+                    <span class="card-desc" id="kpi-rec-desc">RMSSD post-esfuerzo</span>
                 </div>
             </div>
 
@@ -1543,16 +1543,96 @@
             }
 
             // 1. Cargar KPIs de la Sesión
-            document.getElementById('kpi-basal-hr').innerHTML = `${session.hr[0]} <small style="font-size: 0.9rem;">lpm</small>`;
-            document.getElementById('kpi-vagal-react').innerHTML = `${session.rmssd[2]} <small style="font-size: 0.9rem;">ms</small>`;
+            // 1.1 FC Basal
+            const basalHr = session.hr[0];
+            document.getElementById('kpi-basal-hr').innerHTML = `${basalHr !== null ? basalHr.toFixed(1) : '-'} <small style="font-size: 0.9rem;">lpm</small>`;
             
+            const pnsBasal = session.pns[0];
+            let basalHrDesc = "Normocardia / Frecuencia basal óptima";
+            if (basalHr !== null) {
+                if (basalHr < 60) {
+                    basalHrDesc = (pnsBasal !== null && pnsBasal >= 0) 
+                        ? "Bradicardia fisiológica de reposo" 
+                        : "Bradicardia sinusal relativa";
+                } else if (basalHr <= 80) {
+                    basalHrDesc = "Normocardia / Frecuencia basal óptima";
+                } else if (basalHr <= 100) {
+                    basalHrDesc = "Frecuencia basal elevada / Alerta autonómica";
+                } else {
+                    basalHrDesc = "Taquicardia de reposo";
+                }
+            }
+            document.getElementById('kpi-basal-hr-desc').textContent = basalHrDesc;
+
+            // 1.2 Pico Reactividad Vagal (Mayor entre RC10 y RC12)
+            const rc10Rmssd = session.rmssd[1];
+            const rc12Rmssd = session.rmssd[2];
+            let vagalPeak = rc12Rmssd;
+            let vagalPhase = "RC12";
+            if (rc10Rmssd !== null && rc12Rmssd !== null) {
+                if (rc10Rmssd > rc12Rmssd) {
+                    vagalPeak = rc10Rmssd;
+                    vagalPhase = "RC10";
+                }
+            } else if (rc10Rmssd !== null) {
+                vagalPeak = rc10Rmssd;
+                vagalPhase = "RC10";
+            }
+            
+            document.getElementById('kpi-vagal-react').innerHTML = `${vagalPeak !== null ? vagalPeak.toFixed(1) : '-'} <small style="font-size: 0.9rem;">ms</small>`;
+            
+            const basalRmssd = session.rmssd[0];
+            let vagalDesc = `RMSSD durante ${vagalPhase}`;
+            if (vagalPeak !== null && basalRmssd !== null) {
+                const deltaVagal = vagalPeak - basalRmssd;
+                const deltaVagalText = deltaVagal >= 0 ? `+${deltaVagal.toFixed(1)}` : `${deltaVagal.toFixed(1)}`;
+                if (deltaVagal >= 20) {
+                    vagalDesc = `Amplificación alta en ${vagalPhase} (${deltaVagalText} ms vs basal)`;
+                } else if (deltaVagal > 0) {
+                    vagalDesc = `Amplificación moderada en ${vagalPhase} (${deltaVagalText} ms vs basal)`;
+                } else {
+                    vagalDesc = `Reactividad vagal atenuada (${deltaVagalText} ms vs basal)`;
+                }
+            }
+            document.getElementById('kpi-vagal-react-desc').textContent = vagalDesc;
+
+            // 1.3 Pico Simpático (Ruffier)
             const snsVal = session.sns[4];
-            const snsValText = snsVal >= 0 ? `+${snsVal.toFixed(2)}` : snsVal.toFixed(2);
+            const snsValText = snsVal !== null ? (snsVal >= 0 ? `+${snsVal.toFixed(2)}` : snsVal.toFixed(2)) : '-';
             document.getElementById('kpi-symp-peak').textContent = snsValText;
-            document.getElementById('kpi-symp-peak-desc').textContent = `Índice SNS (FC pico: ${session.hr[4]} lpm)`;
             
-            document.getElementById('kpi-rec-rmssd').innerHTML = `${session.rmssd[5]} <small style="font-size: 0.9rem;">ms</small>`;
-            document.getElementById('kpi-rec-desc').textContent = `RMSSD restaurado > basal (${session.rmssd[0]} ms)`;
+            const hrPeak = session.hr[4];
+            const hrPeakText = hrPeak !== null ? `${hrPeak.toFixed(1)} lpm` : '-';
+            let sympDesc = `Índice SNS (FC pico: ${hrPeakText})`;
+            if (snsVal !== null) {
+                if (snsVal >= 3.0) {
+                    sympDesc = `Alta reactividad simpática (FC pico: ${hrPeakText})`;
+                } else if (snsVal >= 1.0) {
+                    sympDesc = `Activación simpática normal (FC pico: ${hrPeakText})`;
+                } else {
+                    sympDesc = `Respuesta simpática amortiguada (FC pico: ${hrPeakText})`;
+                }
+            }
+            document.getElementById('kpi-symp-peak-desc').textContent = sympDesc;
+
+            // 1.4 Recuperación Post-Esfuerzo
+            const recRmssd = session.rmssd[5];
+            document.getElementById('kpi-rec-rmssd').innerHTML = `${recRmssd !== null ? recRmssd.toFixed(1) : '-'} <small style="font-size: 0.9rem;">ms</small>`;
+            
+            let recDesc = "RMSSD post-esfuerzo";
+            if (recRmssd !== null && basalRmssd !== null && basalRmssd > 0) {
+                const diffRec = recRmssd - basalRmssd;
+                const diffRecText = diffRec >= 0 ? `+${diffRec.toFixed(1)}` : `${diffRec.toFixed(1)}`;
+                const ratioRec = Math.round((recRmssd / basalRmssd) * 100);
+                if (recRmssd >= basalRmssd) {
+                    recDesc = `Restauración completa: ${ratioRec}% del basal (${diffRecText} ms)`;
+                } else if (recRmssd >= 0.7 * basalRmssd) {
+                    recDesc = `Recuperación parcial: ${ratioRec}% del basal (${diffRecText} ms)`;
+                } else {
+                    recDesc = `Recuperación incompleta/lenta: ${ratioRec}% del basal (${diffRecText} ms)`;
+                }
+            }
+            document.getElementById('kpi-rec-desc').textContent = recDesc;
 
             // 1.5 Actualizar el Badge de Estado Clínico
             updateStatusBadge(session);
@@ -1641,25 +1721,33 @@
             let color = "#10b981"; // verde
             let bg = "rgba(16, 185, 129, 0.12)";
             
-            if (snsBasal > 2.0) {
-                statusText = "● Estado de Estrés Simpático";
-                color = "#f43f5e"; // rojo
-                bg = "rgba(244, 63, 94, 0.12)";
-            } else if (pnsBasal < -2.0) {
-                statusText = "● Tono Vagal Deprimido";
-                color = "#f59e0b"; // amarillo/naranja
-                bg = "rgba(245, 158, 11, 0.12)";
-            } else if (pnsBasal > 2.0 && snsBasal < -2.0) {
-                statusText = "● Predominio Vagal Basal";
-                color = "#38bdf8"; // celeste
-                bg = "rgba(56, 189, 248, 0.12)";
+            if (snsBasal !== null && pnsBasal !== null) {
+                if (snsBasal > 2.0 && pnsBasal < -2.0) {
+                    statusText = "● Sobrecarga Simpática y Vagal Deprimido";
+                    color = "#f43f5e"; // rojo
+                    bg = "rgba(244, 63, 94, 0.12)";
+                } else if (snsBasal > 2.0) {
+                    statusText = "● Estado de Estrés Simpático";
+                    color = "#f43f5e"; // rojo
+                    bg = "rgba(244, 63, 94, 0.12)";
+                } else if (pnsBasal < -2.0) {
+                    statusText = "● Tono Vagal Deprimido";
+                    color = "#f59e0b"; // amarillo/naranja
+                    bg = "rgba(245, 158, 11, 0.12)";
+                } else if (pnsBasal > 2.0 && snsBasal < -2.0) {
+                    statusText = "● Predominio Vagal Basal";
+                    color = "#38bdf8"; // celeste
+                    bg = "rgba(56, 189, 248, 0.12)";
+                }
             }
             
             const badge = document.getElementById('patient-status-badge');
-            badge.textContent = statusText;
-            badge.style.color = color;
-            badge.style.borderColor = color;
-            badge.style.backgroundColor = bg;
+            if (badge) {
+                badge.textContent = statusText;
+                badge.style.color = color;
+                badge.style.borderColor = color;
+                badge.style.backgroundColor = bg;
+            }
         }
 
         // Tabla Cuantitativa Dinámica
