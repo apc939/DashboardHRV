@@ -267,7 +267,7 @@ def import_forms_csv(source, patient_dir):
     print("\nSincronizando base de datos y dashboard del paciente...")
     script_dir = os.path.dirname(os.path.abspath(__file__))
     parse_script = os.path.join(script_dir, "parse_hrv.py")
-    os.system(f"python3 {parse_script} {patient_root}")
+    os.system(f'python3 "{parse_script}" "{patient_root}"')
 
 def main():
     if len(sys.argv) < 3:

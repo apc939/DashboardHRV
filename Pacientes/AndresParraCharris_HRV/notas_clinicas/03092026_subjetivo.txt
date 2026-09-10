@@ -1,0 +1,15 @@
+COMPLETADO: SI
+======================================================================
+📋 DATOS SUBJETIVOS Y ESTADO MATUTINO (03/09/2026)
+======================================================================
+• Horas de sueno: 8
+• Calidad del sueno (1-5): 5
+• Estado de animo (1-5): 5
+• Nivel de dolor (0-10): 0
+• Detalle de dolor: Ninguno
+• Percepcion de readiness (1-10): 9
+• Ejercicio previo: Descanso
+• Cafeina dia previo: 1 taza matutina
+• Alcohol dia previo: No
+• Sintomas o sensaciones: Parestesia en escapula izquierda
+======================================================================

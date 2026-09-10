@@ -29,6 +29,12 @@ class TestSubjectiveIntegration(unittest.TestCase):
             "HF (%):,4.5,,92.0,,89.6,,5.9,,3.2,,33.8,\n"
             "SDNN (ms):,58.8,,70.1,,77.3,,52.4,,31.2,,48.1,\n"
             "Stress index:,7.47,,7.69,,7.63,,7.40,,17.52,,8.13,\n"
+            "VLF (ms^2):,18.3,,56.3,,92.3,,52.0,,519.4,,92.8,\n"
+            "LF (ms^2):,3120.1,,378.2,,616.6,,768.2,,907.8,,1750.7,\n"
+            "HF (ms^2):,148.7,,5002.0,,6088.2,,51.6,,47.0,,940.0,\n"
+            "LF (n.u.):,95.4,,7.0,,9.2,,93.7,,95.1,,65.1,\n"
+            "HF (n.u.):,4.5,,93.0,,90.8,,6.3,,4.9,,34.9,\n"
+            "Total power (ms^2):,3287.1,,5436.8,,6798.6,,871.8,,1474.2,,2783.6,\n"
         )
         with open(self.sample_csv_path, "w", encoding="utf-8") as f:
             f.write(sample_csv_content)
@@ -109,7 +115,8 @@ class TestSubjectiveIntegration(unittest.TestCase):
         with open(subjetivo_file, "w", encoding="utf-8") as f:
             f.write("COMPLETADO: SI\n• Horas de sueño: 8\n• Percepción de readiness (1-10): 9\n")
             
-        ret = os.system(f"python3 scripts/parse_hrv.py {subjetivo_file} > /dev/null 2>&1")
+        script_p = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "scripts", "parse_hrv.py"))
+        ret = os.system(f'python3 "{script_p}" "{subjetivo_file}" > /dev/null 2>&1')
         self.assertEqual(ret, 0, "El script debe procesar el archivo _subjetivo.txt derivando su CSV")
 
     def test_google_forms_importer(self):
@@ -119,13 +126,15 @@ class TestSubjectiveIntegration(unittest.TestCase):
                 "Marca temporal,Fecha de toma,Horas de sueño,Calidad descanso (1-5),Estado de ánimo (1-5),Nivel de dolor (0-10),Detalle dolor,Readiness (1-10),Ejercicio previo,Consumo cafeína,Consumo alcohol,Notas o síntomas\n"
                 "01/09/2026 08:30:00,31/08/2026,7.2,4,4,0,Ninguno,8,Fuerza torso 45min,1 taza matutina,No,Sensación de buen descanso\n"
             )
-        ret = os.system(f"python3 scripts/import_google_forms.py {csv_forms_path} {self.patient_dir} > /dev/null 2>&1")
+        script_p = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "scripts", "import_google_forms.py"))
+        ret = os.system(f'python3 "{script_p}" "{csv_forms_path}" "{self.patient_dir}" > /dev/null 2>&1')
         self.assertEqual(ret, 0)
         
         subjetivo_file = os.path.join(self.patient_dir, "notas_clinicas", "31082026_subjetivo.txt")
         self.assertTrue(os.path.exists(subjetivo_file))
         
         json_path = os.path.join(self.patient_dir, "data.json")
+        self.assertTrue(os.path.exists(json_path))
         with open(json_path, "r", encoding="utf-8") as f:
             data = json.load(f)
         sub = data["sessions"][0]["subjective"]
@@ -141,13 +150,15 @@ class TestSubjectiveIntegration(unittest.TestCase):
                 "Timestamp,Fecha de la toma de HRV,Horas de sueño,Calidad del sueño (Sensación de descanso),Estado de ánimo y energía,Nivel de dolor corporal,Detalle o zona del dolor,Readiness / Disposición para entrenar hoy,Ejercicio realizado día previo,Consumo de cafeína día previo,Consumo de alcohol día previo,Otros síntomas o sensaciones\n"
                 "9/1/2026 13:10:01,8/31/2026,7,3,4,0,Ninguno,9,Descanso,1 taza matutina,No,Ninguno\n"
             )
-        ret = os.system(f"python3 scripts/import_google_forms.py {csv_forms_path} {self.patient_dir} > /dev/null 2>&1")
+        script_p = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "scripts", "import_google_forms.py"))
+        ret = os.system(f'python3 "{script_p}" "{csv_forms_path}" "{self.patient_dir}" > /dev/null 2>&1')
         self.assertEqual(ret, 0)
         
         subjetivo_file = os.path.join(self.patient_dir, "notas_clinicas", "31082026_subjetivo.txt")
         self.assertTrue(os.path.exists(subjetivo_file))
         
         json_path = os.path.join(self.patient_dir, "data.json")
+        self.assertTrue(os.path.exists(json_path))
         with open(json_path, "r", encoding="utf-8") as f:
             data = json.load(f)
         sub = data["sessions"][0]["subjective"]
@@ -159,7 +170,8 @@ class TestSubjectiveIntegration(unittest.TestCase):
 
     def test_set_url_configuration(self):
         fake_url = "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit"
-        ret = os.system(f"python3 scripts/import_google_forms.py --set-url '{fake_url}' {self.patient_dir} > /dev/null 2>&1")
+        script_p = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "scripts", "import_google_forms.py"))
+        ret = os.system(f'python3 "{script_p}" --set-url "{fake_url}" "{self.patient_dir}" > /dev/null 2>&1')
         self.assertEqual(ret, 0)
         
         url_file = os.path.join(self.patient_dir, "forms_url.txt")
@@ -189,7 +201,8 @@ class TestSubjectiveIntegration(unittest.TestCase):
             f.write("COMPLETADO: SI\n• Horas de sueño: 8.5\n• Percepción de readiness (1-10): 10\n")
             
         # 1. Proceso de carpeta completa del paciente
-        ret = os.system(f"python3 scripts/parse_hrv.py {self.patient_dir} > /dev/null 2>&1")
+        script_p = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "scripts", "parse_hrv.py"))
+        ret = os.system(f'python3 "{script_p}" "{self.patient_dir}" > /dev/null 2>&1')
         self.assertEqual(ret, 0)
         
         json_path = os.path.join(self.patient_dir, "data.json")
@@ -202,9 +215,9 @@ class TestSubjectiveIntegration(unittest.TestCase):
         self.assertEqual(data["sessions"][0]["subjective"]["sleep_hours"], 8.5)
         self.assertEqual(data["sessions"][0]["subjective"]["readiness"], 10)
         
-        # 2. Proceso pasando directamente el archivo de notas
-        ret_concl = os.system(f"python3 scripts/parse_hrv.py {concl_file} > /dev/null 2>&1")
-        self.assertEqual(ret_concl, 0)
+        # 2. Proceso de archivo CSV individual dentro de reportes_kubios/
+        ret_ind = os.system(f'python3 "{script_p}" "{csv_in_sub}" > /dev/null 2>&1')
+        self.assertEqual(ret_ind, 0)
 
     def test_suggested_conclusions_robust_recovery(self):
         session = {

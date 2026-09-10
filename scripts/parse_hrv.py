@@ -60,16 +60,26 @@ def find_patient_csv_files(patient_root):
     # 1. Buscar en reportes_kubios/
     kubios_dir = os.path.join(patient_root, "reportes_kubios")
     if os.path.isdir(kubios_dir):
-        for f in sorted(os.listdir(kubios_dir)):
+        for f in os.listdir(kubios_dir):
             if f.endswith(".csv") and re.match(r"^\d{8}\.csv$", f):
                 csv_files.append(os.path.join(kubios_dir, f))
     # 2. Buscar en la raíz de patient_root
-    for f in sorted(os.listdir(patient_root)):
+    for f in os.listdir(patient_root):
         if f.endswith(".csv") and re.match(r"^\d{8}\.csv$", f):
             full_p = os.path.join(patient_root, f)
             if full_p not in csv_files:
                 csv_files.append(full_p)
-    return sorted(csv_files)
+                
+    def date_sort_key(path):
+        fname = os.path.basename(path)
+        m = re.match(r"^(\d{2})(\d{2})(\d{4})\.csv$", fname)
+        if m:
+            d, mo, y = m.groups()
+            return (int(y), int(mo), int(d))
+        return (0, 0, 0)
+        
+    csv_files.sort(key=date_sort_key)
+    return csv_files
 
 def parse_csv_file(filepath):
     filename = os.path.basename(filepath)

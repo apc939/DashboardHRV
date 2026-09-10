@@ -1,0 +1,18 @@
+REVISADO: NO
+======================================================================
+📊 VALORES FISIOLÓGICOS DE LA SESIÓN (Referencia de apoyo)
+======================================================================
+• FC Basal (DS): 56.8 lpm  |  RMSSD Basal: 29.3 ms  |  PNS: +0.26  |  SNS: -0.60
+• Pico Vagal (RC12): RMSSD 47.6 ms  |  HF: 76.2%  |  PNS: +0.78
+• Reto Ortostático (ORT): FC +25.6 lpm (82.4 lpm)  |  LF/HF: 14.09
+• Pico Simpático (RUFF): FC pico 107.6 lpm  |  SNS index: +9.27
+• Recuperación (REC): RMSSD 42.7 ms  |  LF/HF: 1.32  |  PNS: -0.13
+======================================================================
+✍️ CONCLUSIONES CLÍNICAS (Edita el texto abajo según tu criterio):
+======================================================================
+
+Reserva Vagal: Marcada amplificación parasimpática durante la respiración pautada (RMSSD de 29.3 a 47.6 ms y HF relativo de 76.2%). Confirma un acoplamiento cardiorrespiratorio normal y alta capacidad de modulación vagal.
+
+Tolerancia: Respuesta barorrefleja intacta sin taquicardia postural patológica (+25.6 lpm). Adecuada activación simpática durante las 30 sentadillas (SNS index +9.27, FC pico 107.6 lpm) con repliegue vagal transitorio.
+
+Recuperacion: Excelente reactivación vagal post-esfuerzo: el RMSSD recupera a 42.7 ms superando el valor basal (29.3 ms) y el balance LF/HF se restablece a 1.32 en los 6 minutos posteriores al ejercicio.
